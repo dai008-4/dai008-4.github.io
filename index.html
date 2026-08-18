@@ -5709,13 +5709,13 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
         <span class="eng-refresh" id="slang-refresh" style="color: rgb(56, 142, 60);" onclick="refreshSlang()"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>换一批</span>
       </div>
       <div class="slang-content">
-        <div class="slang-word" id="slang-word" style="color: rgb(56, 142, 60);">颗粒度</div>
+        <div class="slang-word" id="slang-word" style="color: rgb(56, 142, 60);">Agent</div>
         <div class="slang-meaning">
-          <div class="label">就是：</div>
-          <div class="text" id="slang-text" style="color: rgb(56, 142, 60);">再说具体一点</div>
+          <div class="label">解释：</div>
+          <div class="text" id="slang-text" style="color: rgb(56, 142, 60);">AI智能体，以大模型为大脑，自主拆解任务、调用工具、闭环执行</div>
         </div>
       </div>
-      <div class="slang-joke" id="slang-joke">今天的生活一地鸡毛，很蓬松。</div>
+      <div class="slang-joke" id="slang-joke">应用：说"整理销售数据生成报表发群里"，Agent全自动完成，不用你管每一步。</div>
     </div>
 
     <!-- Aesthetic Knowledge -->
@@ -7667,44 +7667,31 @@ var defaultPromoMini = [
 ];
 
 var slangData = [
-  // --- 职场黑话 ---
-  {word:'颗粒度',meaning:'再说具体一点',joke:'今天的生活一地鸡毛，很蓬松。'},
-  {word:'对齐',meaning:'确认一下大家想法一致',joke:'今天的生活一地鸡毛，很蓬松。'},
-  {word:'赋能',meaning:'给资源给支持',joke:'别问我累不累，我只是在被生活赋能。'},
-  {word:'闭环',meaning:'流程完整走通',joke:'打工人的闭环：起床、上班、想辞职、继续上班。'},
-  {word:'抓手',meaning:'切入点或着力点',joke:'生活的抓手就是每天准时下班。'},
-  {word:'沉淀',meaning:'总结积累',joke:'一年的沉淀，沉淀出了一身疲惫。'},
-  {word:'赛道',meaning:'业务方向或领域',joke:'换了个赛道，发现每条赛道都通向加班。'},
-  {word:'组合拳',meaning:'多手段配合',joke:'生活对我打了一套组合拳，我直接躺平。'},
-  {word:'拉通',meaning:'跨部门沟通协调',joke:'拉通了一圈，发现只有我一个人在拉。'},
-  {word:'打法',meaning:'策略或方法',joke:'老板说换个打法，我换了个体位继续加班。'},
-  {word:'心智',meaning:'用户心中的品牌认知',joke:'我的心智里只有下班两个字。'},
-  {word:'触达',meaning:'让用户看到信息',joke:'老板的微信触达了我，我的灵魂出窍了。'},
-  {word:'复用',meaning:'重复利用已有资源',joke:'我被复用了一整天，已经磨损了。'},
-  {word:'拉齐',meaning:'同步信息确保一致',joke:'拉齐了半天，发现大家都不在一个水平线上。'},
-  // --- 职业专业词汇 ---
-  {word:'视觉锤',meaning:'品牌视觉化的记忆符号，1秒内被识别',joke:'我的视觉锤就是黑眼圈，一看就是加班了。'},
-  {word:'语言钉子',meaning:'用一句话把品牌定位钉入用户心智',joke:'老板的语言钉子："这个今天下班前给我。"'},
-  {word:'用户画像',meaning:'目标用户的典型特征描述',joke:'我的用户画像：没钱、没时间、没脾气。'},
-  {word:'CMF设计',meaning:'Color色彩、Material材质、Finish工艺三维协同',joke:'CMF做完，发际线也完成了CMF：Color变白、Material变稀、Finish变光。'},
-  {word:'情绪价值',meaning:'产品带给用户的情感满足感',joke:'我的情绪价值就是准时打卡下班那一刻。'},
-  {word:'底层逻辑',meaning:'事物发展的核心规律',joke:'加班的底层逻辑就是：你不敢说不。'},
-  {word:'降维打击',meaning:'用高维度优势碾压低维度对手',joke:'老板一句话就是对我降维打击。'},
-  {word:'锚点',meaning:'最吸引用户注意力的亮点',joke:'我的锚点就是工资到账的那条短信。'},
-  {word:'触点',meaning:'用户接触品牌的每一个环节',joke:'每个触点都在提醒我：你该加班了。'},
-  {word:'种草闭环',meaning:'从看到内容到下单购买的完整路径',joke:'我的种草闭环：看到、想买、没钱、放弃。'},
-  {word:'信息差',meaning:'掌握信息的不对称优势',joke:'老板和我的信息差就是：他知道什么时候下班，我不知道。'},
-  {word:'认知变现',meaning:'将知识认知转化为实际收益',joke:'我的认知变现就是：认识到自己没钱。'},
-  {word:'心智产权',meaning:'品牌在用户心智中的独占性认知',joke:'我的心智产权里只有"下班"两个字，谁也抢不走。'},
-  {word:'长尾内容',meaning:'非热门但持续带来流量的内容',joke:'我就是公司的长尾内容，不热门但一直都在。'},
-  {word:'供给侧',meaning:'产品或服务的提供方',joke:'供给侧改革：老板供给我更多工作。'},
-  {word:'需求侧',meaning:'消费者或市场需求方',joke:'需求侧管理：我的需求是少干活，但没人管。'},
-  {word:'内容密度',meaning:'单位篇幅内信息量的大小',joke:'我的内容密度很低，但加班密度很高。'},
-  {word:'搜索心智',meaning:'用户通过搜索建立的品牌认知',joke:'我的搜索心智：搜索"如何准时下班"。'},
-  {word:'人设',meaning:'在公众面前塑造的人物形象',joke:'我的人设是"靠谱"，代价是永远靠谱地加班。'},
-  {word:'差异化定位',meaning:'与竞品形成明显区别的市场位置',joke:'我的差异化定位：别人加班到9点，我加到10点。'},
-  {word:'信任阈值',meaning:'用户产生信任所需的最低门槛',joke:'我的信任阈值很高，但老板的加班阈值很低。'},
-  {word:'情绪觉醒',meaning:'2026设计趋势：从功能堆砌转向情感共鸣',joke:'我的情绪觉醒：意识到自己真的很累。'}
+  // --- AI行业专业词 ---
+  {word:'Agent',meaning:'AI智能体，以大模型为大脑，自主拆解任务、调用工具、闭环执行',joke:'应用：说"整理销售数据生成报表发群里"，Agent全自动完成，不用你管每一步。'},
+  {word:'RAG',meaning:'检索增强生成，AI回答前先查知识库，相当于从闭卷变开卷',joke:'应用：客服机器人先查产品手册再回答，不再一本正经编造不存在的功能。'},
+  {word:'MCP',meaning:'模型上下文协议，AI界的USB-C接口，统一大模型与工具间的通信标准',joke:'应用：工具只开发一次，GPT、Claude、通义千问都能直接调用，开发成本降90%。'},
+  {word:'Token',meaning:'AI处理文字的最小单位，也是大模型API计费的"电费"度量',joke:'应用：写Prompt越精简越省钱，一百万Token的价格战已经打到买不了一碗钵钵鸡。'},
+  {word:'Vibe Coding',meaning:'氛围编程，用大白话描述需求让AI写代码，人只看结果不读代码',joke:'应用：产品经理直接说"做个登录页"，AI写出完整代码，程序员核心能力从写代码变审代码。'},
+  {word:'AI幻觉',meaning:'AI一本正经地胡说八道，对没见过的问题也会自信编造答案',joke:'应用：纽约律师用ChatGPT写了6个不存在的案例被罚5000美元，法律文书必须人工核验。'},
+  {word:'多模态',meaning:'AI从只读文字升级到同时看图、听音、理解视频，五感齐全',joke:'应用：GPT-4o的"o"就是omni全能，拍照问AI"这道菜怎么做"它直接看图回答。'},
+  {word:'上下文窗口',meaning:'AI一次能处理的信息量上限，像桌面越大摊得越开',joke:'应用：2020年GPT-3只能读3000字，2026年LLaMA4能一口气读30本三国演义。'},
+  {word:'Agentic RAG',meaning:'第三代检索增强，AI自己判断什么时候需要查资料、查哪里',joke:'应用：不再每次都翻全书，AI像聪明学生一样先判断自己会不会，不会才去翻书。'},
+  {word:'Prompt',meaning:'提示词，人与AI大脑的唯一沟通通道，指令越清晰输出越精准',joke:'应用：说"写周报"AI乱写，说"你是后端开发，本周3个接口5个bug，分三部分写500字"就靠谱。'},
+  {word:'Skill',meaning:'AI工具技能包，给大模型装的"入职培训手册"，装什么就会什么',joke:'应用：装了Excel技能就会做表格，装了品牌指南技能就懂你公司的设计风格。'},
+  {word:'推理模型',meaning:'AI从"脱口而出"升级为"打草稿再答"，内部生成思维链再输出',joke:'应用：OpenAI o1在数学奥赛题准确率从13%飙到83%，复杂推理不再靠运气。'},
+  {word:'MoE',meaning:'混合专家模型，256个专家只派最擅长的8个出手，又省钱又高效',joke:'应用：DeepSeek-V3有6710亿参数但每次只用370亿，训练成本仅550万美元。'},
+  {word:'Grounding',meaning:'事实锚定，把AI输出与可验证的信息源绑定，像放风筝的线不让它飞走',joke:'应用：AI生成财报分析时每条数据都标注出处，避免把去年数据当成今年的。'},
+  {word:'多Agent协作',meaning:'多个AI智能体分工合作，文案Agent+审核Agent+排版Agent组队办公',joke:'应用：一个写文案一个审错一个排版，像项目经理带团队，失败还能自动换路线重来。'},
+  // --- 社会热点词 ---
+  {word:'养龙虾',meaning:'部署调教开源AI智能体OpenClaw的过程，全民赛博养殖热',joke:'应用：在微信里跟"龙虾"说"帮我订机票清邮箱"，它全自动执行，GitHub星标超24万。'},
+  {word:'AI炼化',meaning:'把工作数据和经验投喂给AI，训练出能模仿自身工作模式的AI分身',joke:'应用：离职员工的飞书消息+钉钉文档投喂给AI，生成"同事.skill"继续干活。'},
+  {word:'数字员工',meaning:'AI驱动的虚拟劳动力，能完成报表整理、文案排版、数据核对等标准化工作',joke:'应用：公司要求核心部门全员"养龙虾"，把自己的经验不断投喂训练AI替身。'},
+  {word:'赛博同事',meaning:'AI智能体作为工作搭档，与人类协同办公的新劳动关系',joke:'应用：你的同事可能是个AI，帮你查数据做表格发邮件，你负责最终审核拍板。'},
+  {word:'人机分工',meaning:'AI干机械性事务，人专注感知、创意和临场判断能力',joke:'应用：AI做报表整理文案排版，你专注客户谈判和创意策划，各干各的擅长活。'},
+  {word:'代码入侵',meaning:'非程序员用AI工具直接生成代码改造工作流程，编程能力下沉到普通人',joke:'应用：运营用AI写脚本自动抓取竞品数据，不需要请开发排期，自己就搞定了。'},
+  {word:'全民AI化',meaning:'AI从技术圈扩散到全社会，各行各业的普通人都在用AI提效',joke:'应用：脉脉报告显示2026年AI岗位激增8.7倍，具身智能暴涨15倍，连餐厅都用AI点单。'},
+  {word:'个人AI助手',meaning:'住在手机里的超级管家，通过聊天就能帮你管日历订机票填表单写代码',joke:'应用：腾讯2026年3月推出基于OpenClaw的微信AI产品，黄仁勋称其"有史以来最重要的软件"。'}
 ];
 var slangIdx = 0;
 
