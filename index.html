@@ -5818,7 +5818,7 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
     <!-- Section 2: Fridge -->
     <div class="health-fridge-card">
       <div class="health-fridge-head">
-        <span class="health-fridge-title">冰箱食材库（减脂备餐版）</span>
+        <span class="health-fridge-title">冰箱食材</span>
         <button class="health-fridge-add-btn" onclick="openFridgeModal()">+ 添加</button>
       </div>
       <div class="health-fridge-shopping">每周五或周日采购更新</div>
@@ -5826,7 +5826,10 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
     </div>
     <!-- Section 3: Weekly meal plan -->
     <div>
-      <div class="health-section-title">每周食谱</div>
+      <div class="health-section-title" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>每周食谱</span>
+        <button class="health-fridge-add-btn" onclick="refreshMealPlan()" style="font-size:12px;padding:4px 10px;">🔄 刷新食谱</button>
+      </div>
       <div class="health-week-toggle" id="health-week-toggle">
         <button class="active" data-week="0" onclick="switchHealthWeek(0)">第一周</button>
         <button data-week="1" onclick="switchHealthWeek(1)">第二周</button>
@@ -8202,44 +8205,176 @@ var healthDefaultFridge = [
    {name:'玉米棒',qty:'X3'},{name:'紫米',qty:'X1'},{name:'蕨根粉',qty:'X1'}]
 ];
 
-var healthMealPlan = [
-  {title:'本周食谱',days:[
-    {day:'周一',theme:'',bf:'煮鸡蛋 + 蒸紫薯',lu:'【食堂】盒饭（配紫米饭/馒头）',dn:'蒸南瓜'},
-    {day:'周二',theme:'',bf:'烤馒头片 + 煮鸡蛋',lu:'【自制-汤面1】番茄虾滑汤面（含少量西兰花）',dn:'番茄虾滑浓汤'},
-    {day:'周三',theme:'',bf:'蒸玉米棒 + 水煮蛋',lu:'【食堂】盒饭（配紫米饭/馒头）',dn:'【无】'},
-    {day:'周四',theme:'',bf:'煎鸡蛋 + 蒸紫薯',lu:'【自制-拌菜拌面】酸辣蕨根粉（加黄瓜丝瘦肉） + 蒸馒头',dn:'拍黄瓜'},
-    {day:'周五',theme:'',bf:'蒸南瓜 + 煎蛋',lu:'【食堂】盒饭（配紫米饭/馒头）',dn:'【无】'},
-    {day:'周六',theme:'',bf:'抱蛋烤馒头 + 温开水',lu:'【自制-焖炒面类】电饭煲番茄肉酱焖鲜面条',dn:'凉拌蕨根粉'},
-    {day:'周日',theme:'',bf:'蒸玉米 + 煮鸡蛋',lu:'【自制-汤面2】三鲜猪肉汤面（含少量胡萝卜片）',dn:'水煮蛋 2 个'}
-  ]},
-  {title:'本周食谱',days:[
-    {day:'周一',theme:'',bf:'煮鸡蛋 + 蒸南瓜',lu:'【食堂】盒饭（配紫米饭/馒头）',dn:'水煮虾滑'},
-    {day:'周二',theme:'',bf:'烤土豆 + 煎蛋',lu:'【自制-拌菜拌面】猪肉西兰花拌面（附菜花汤）',dn:'清汤鲜面条'},
-    {day:'周三',theme:'',bf:'蒸馒头 + 水煮蛋',lu:'【食堂】盒饭（配紫米饭/馒头）',dn:'【无】'},
-    {day:'周四',theme:'',bf:'煎蛋 + 蒸紫薯',lu:'【自制-焖炒面类】什锦炒鲜面（瘦肉+胡萝卜+西兰花）',dn:'虾滑蔬菜汤'},
-    {day:'周五',theme:'',bf:'蒸玉米 + 煮鸡蛋',lu:'【食堂】盒饭（配紫米饭/馒头）',dn:'【无】'},
-    {day:'周六',theme:'',bf:'抱蛋馒头 + 温开水',lu:'【自制-汤面3】清汤虾滑丸子面（含少量黄瓜片）',dn:'【电饭煲】紫米粥'},
-    {day:'周日',theme:'',bf:'煮鸡蛋 + 蒸南瓜',lu:'【自制-拌菜拌面】凉拌蕨根粉 + 空气炸虾滑丸',dn:'水煮西兰花'}
-  ]},
-  {title:'本周食谱',days:[
-    {day:'周一',theme:'',bf:'蒸紫薯 + 水煮蛋',lu:'【食堂】盒饭（配紫米饭/馒头）',dn:'蒸玉米棒'},
-    {day:'周二',theme:'',bf:'煎蛋 + 蒸南瓜',lu:'【自制-焖炒面类】土豆肉丝焖面（含少许胡萝卜丝）',dn:'蒸馒头'},
-    {day:'周三',theme:'',bf:'蒸馒头 + 煮鸡蛋',lu:'【食堂】盒饭（配紫米饭/馒头）',dn:'【无】'},
-    {day:'周四',theme:'',bf:'烤玉米 + 水煮蛋',lu:'【自制-汤面4】酸辣浓汤瘦肉面（含少量菜花碎）',dn:'番茄汤面'},
-    {day:'周五',theme:'',bf:'蒸紫薯 + 煎蛋',lu:'【食堂】盒饭（配紫米饭/馒头）',dn:'【无】'},
-    {day:'周六',theme:'',bf:'煮鸡蛋 + 蒸南瓜',lu:'【自制-拌菜拌面】西兰花虾滑拌面（附番茄蛋花汤）',dn:'现切生黄瓜'},
-    {day:'周日',theme:'',bf:'烤土豆块 + 煎蛋',lu:'【自制-焖炒面类】西兰花虾滑炒鲜面',dn:'番茄虾滑汤'}
-  ]},
-  {title:'本周食谱',days:[
-    {day:'周一',theme:'',bf:'蒸玉米 + 煮鸡蛋',lu:'【食堂】盒饭（配紫米饭/馒头）',dn:'蒸紫薯'},
-    {day:'周二',theme:'',bf:'蒸紫薯 + 煎蛋',lu:'【自制-汤面5】番茄土豆瘦肉汤面（含少量西兰花）',dn:'酸辣蕨根粉'},
-    {day:'周三',theme:'',bf:'蒸馒头 + 水煮蛋',lu:'【食堂】盒饭（配紫米饭/馒头）',dn:'【无】'},
-    {day:'周四',theme:'',bf:'烤南瓜条 + 煮鸡蛋',lu:'【自制-拌菜拌面】土豆肉丝拌鲜面（附菜花汤）',dn:'【电饭煲】瘦肉清粥'},
-    {day:'周五',theme:'',bf:'蒸玉米 + 煎蛋',lu:'【食堂】盒饭（配紫米饭/馒头）',dn:'【无】'},
-    {day:'周六',theme:'',bf:'煎蛋 + 蒸紫薯',lu:'【自制-焖炒面类】电饭煲瘦肉蔬菜焖面',dn:'凉拌黄瓜'},
-    {day:'周日',theme:'',bf:'蛋液烤馒头 + 温开水',lu:'【自制-汤面6】蔬菜虾滑小馄饨汤面（含少量黄瓜丝）',dn:'蒸南瓜'}
-  ]}
-];
+// Recipe pool - dishes generated based on fridge ingredients
+var recipePool = {
+  bf: [
+    {name:'煮鸡蛋 + 蒸紫薯', need:['鸡蛋','紫薯']},
+    {name:'烤馒头片 + 煮鸡蛋', need:['馒头','鸡蛋']},
+    {name:'蒸玉米棒 + 水煮蛋', need:['玉米棒','鸡蛋']},
+    {name:'煎鸡蛋 + 蒸紫薯', need:['鸡蛋','紫薯']},
+    {name:'蒸南瓜 + 煎蛋', need:['南瓜','鸡蛋']},
+    {name:'抱蛋烤馒头 + 温开水', need:['馒头','鸡蛋']},
+    {name:'蒸玉米 + 煮鸡蛋', need:['玉米棒','鸡蛋']},
+    {name:'蒸馒头 + 水煮蛋', need:['馒头','鸡蛋']},
+    {name:'烤土豆 + 煎蛋', need:['土豆','鸡蛋']},
+    {name:'烤南瓜条 + 煮鸡蛋', need:['南瓜','鸡蛋']},
+    {name:'蛋液烤馒头 + 温开水', need:['馒头','鸡蛋']},
+    {name:'蒸紫薯 + 水煮蛋', need:['紫薯','鸡蛋']},
+    {name:'煎蛋 + 蒸南瓜', need:['鸡蛋','南瓜']},
+    {name:'煮鸡蛋 + 蒸南瓜', need:['鸡蛋','南瓜']},
+    {name:'蒸玉米 + 煎蛋', need:['玉米棒','鸡蛋']},
+    {name:'蒸紫薯 + 煎蛋', need:['紫薯','鸡蛋']},
+    {name:'烤土豆块 + 煎蛋', need:['土豆','鸡蛋']},
+    {name:'水煮蛋 + 温开水', need:['鸡蛋']},
+    {name:'蒸馒头 + 温开水', need:['馒头']},
+    {name:'蒸紫薯 + 温开水', need:['紫薯']},
+    {name:'蒸南瓜 + 温开水', need:['南瓜']},
+    {name:'蒸玉米 + 温开水', need:['玉米棒']}
+  ],
+  lu_home: [
+    {name:'【自制-汤面】番茄虾滑汤面（含少量西兰花）', need:['鲜面条','番茄','虾滑']},
+    {name:'【自制-拌菜拌面】酸辣蕨根粉（加黄瓜丝瘦肉） + 蒸馒头', need:['蕨根粉','黄瓜','猪瘦肉','馒头']},
+    {name:'【自制-焖炒面类】电饭煲番茄肉酱焖鲜面条', need:['鲜面条','番茄','猪瘦肉']},
+    {name:'【自制-汤面】三鲜猪肉汤面（含少量胡萝卜片）', need:['鲜面条','猪瘦肉']},
+    {name:'【自制-拌菜拌面】猪肉西兰花拌面（附菜花汤）', need:['鲜面条','猪瘦肉','西兰花']},
+    {name:'【自制-焖炒面类】什锦炒鲜面（瘦肉+胡萝卜+西兰花）', need:['鲜面条','猪瘦肉','胡萝卜','西兰花']},
+    {name:'【自制-汤面】清汤虾滑丸子面（含少量黄瓜片）', need:['鲜面条','虾滑']},
+    {name:'【自制-拌菜拌面】凉拌蕨根粉 + 空气炸虾滑丸', need:['蕨根粉','虾滑']},
+    {name:'【自制-焖炒面类】土豆肉丝焖面（含少许胡萝卜丝）', need:['鲜面条','土豆','猪瘦肉']},
+    {name:'【自制-汤面】酸辣浓汤瘦肉面（含少量菜花碎）', need:['鲜面条','猪瘦肉']},
+    {name:'【自制-拌菜拌面】西兰花虾滑拌面（附番茄蛋花汤）', need:['鲜面条','西兰花','虾滑']},
+    {name:'【自制-焖炒面类】西兰花虾滑炒鲜面', need:['鲜面条','西兰花','虾滑']},
+    {name:'【自制-汤面】番茄土豆瘦肉汤面（含少量西兰花）', need:['鲜面条','番茄','土豆','猪瘦肉']},
+    {name:'【自制-拌菜拌面】土豆肉丝拌鲜面（附菜花汤）', need:['鲜面条','土豆','猪瘦肉']},
+    {name:'【自制-焖炒面类】电饭煲瘦肉蔬菜焖面', need:['鲜面条','猪瘦肉']},
+    {name:'【自制-汤面】蔬菜虾滑小馄饨汤面（含少量黄瓜丝）', need:['鲜面条','虾滑']},
+    {name:'【自制-拌菜拌面】猪肉西兰花拌面', need:['鲜面条','猪瘦肉','西兰花']},
+    {name:'【自制-汤面】番茄瘦肉汤面（含少量黄瓜丝）', need:['鲜面条','番茄','猪瘦肉']},
+    {name:'【自制-焖炒面类】番茄虾滑焖鲜面条', need:['鲜面条','番茄','虾滑']}
+  ],
+  dn: [
+    {name:'蒸南瓜', need:['南瓜']},
+    {name:'番茄虾滑浓汤', need:['番茄','虾滑']},
+    {name:'【无】', need:[]},
+    {name:'拍黄瓜', need:['黄瓜']},
+    {name:'凉拌蕨根粉', need:['蕨根粉']},
+    {name:'水煮蛋 2 个', need:['鸡蛋']},
+    {name:'水煮虾滑', need:['虾滑']},
+    {name:'清汤鲜面条', need:['鲜面条']},
+    {name:'【电饭煲】紫米粥', need:['紫米']},
+    {name:'水煮西兰花', need:['西兰花']},
+    {name:'蒸玉米棒', need:['玉米棒']},
+    {name:'蒸馒头', need:['馒头']},
+    {name:'番茄汤面', need:['鲜面条','番茄']},
+    {name:'现切生黄瓜', need:['黄瓜']},
+    {name:'酸辣蕨根粉', need:['蕨根粉']},
+    {name:'瘦肉清粥', need:['猪瘦肉']},
+    {name:'凉拌黄瓜', need:['黄瓜']},
+    {name:'蒸紫薯', need:['紫薯']},
+    {name:'蒸土豆块', need:['土豆']},
+    {name:'番茄蛋花汤', need:['番茄','鸡蛋']}
+  ]
+};
+
+// Check if a recipe's required ingredients are all in the fridge
+function isRecipeAvailable(recipe, fridgeNames){
+  if(!recipe.need || recipe.need.length === 0) return true;
+  return recipe.need.every(function(ing){
+    return fridgeNames.some(function(fn){
+      var fl = fn.toLowerCase();
+      var il = ing.toLowerCase();
+      return fl.indexOf(il) >= 0 || il.indexOf(fl) >= 0;
+    });
+  });
+}
+
+// Pick a random recipe from available pool, excluding recently used ones
+function pickUniqueRecipe(availPool, usedRecent){
+  var pool = availPool.filter(function(r){
+    return usedRecent.indexOf(r.name) < 0;
+  });
+  if(pool.length === 0) pool = availPool;
+  if(pool.length === 0) return {name:'【无】', need:[]};
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+// Generate a meal plan for a week based on fridge ingredients
+function generateMealPlan(weekIdx){
+  var fridgeNames = getFridgeItemNames();
+  var dayNames = ['周一','周二','周三','周四','周五','周六','周日'];
+  var canteenLunch = '【食堂】盒饭（配紫米饭/馒头）';
+  var days = [];
+  var usedBf = [];
+  var usedLu = [];
+  var usedDn = [];
+
+  // Get available recipes
+  var availBf = recipePool.bf.filter(function(r){ return isRecipeAvailable(r, fridgeNames); });
+  var availLuHome = recipePool.lu_home.filter(function(r){ return isRecipeAvailable(r, fridgeNames); });
+  var availDn = recipePool.dn.filter(function(r){ return isRecipeAvailable(r, fridgeNames); });
+
+  // Fallback: if no bf recipes available, add a basic one
+  if(availBf.length === 0){
+    availBf = [{name:'温开水 + 简餐', need:[]}];
+  }
+
+  for(var di=0; di<7; di++){
+    // Pick breakfast (exclude last 2 days)
+    var pickBf = pickUniqueRecipe(availBf, usedBf);
+    usedBf.push(pickBf.name);
+    if(usedBf.length > 2) usedBf.shift();
+
+    // Pick lunch: canteen for Mon(0)/Wed(2)/Fri(4), home for others
+    var luName;
+    if(di === 0 || di === 2 || di === 4){
+      luName = canteenLunch;
+    } else {
+      if(availLuHome.length === 0){
+        luName = canteenLunch;
+      } else {
+        var pickLu = pickUniqueRecipe(availLuHome, usedLu);
+        luName = pickLu.name;
+      }
+    }
+    usedLu.push(luName);
+    if(usedLu.length > 2) usedLu.shift();
+
+    // Pick dinner (exclude last 2 days)
+    var pickDn = pickUniqueRecipe(availDn, usedDn);
+    usedDn.push(pickDn.name);
+    if(usedDn.length > 2) usedDn.shift();
+
+    days.push({day: dayNames[di], theme:'', bf: pickBf.name, lu: luName, dn: pickDn.name});
+  }
+
+  var plan = {title:'本周食谱', days: days};
+  lsSet('health_mealplan_'+weekIdx, plan);
+  return plan;
+}
+
+// Get the active meal plan (from storage or generate new)
+function getActiveMealPlan(weekIdx){
+  var stored = lsGet('health_mealplan_'+weekIdx, null);
+  if(stored && stored.days && stored.days.length === 7) return stored;
+  return generateMealPlan(weekIdx);
+}
+
+// Refresh (regenerate) the current week's meal plan
+function refreshMealPlan(){
+  generateMealPlan(healthCurrentWeek);
+  // Clear meal checks and reasons for this week
+  for(var di=0; di<7; di++){
+    lsSet(getMealCheckKey(healthCurrentWeek, di, 'bf'), false);
+    lsSet(getMealCheckKey(healthCurrentWeek, di, 'lu'), false);
+    lsSet(getMealCheckKey(healthCurrentWeek, di, 'dn'), false);
+    lsSet(getMealReasonKey(healthCurrentWeek, di), '');
+  }
+  // Reset shopping list
+  document.getElementById('health-shopping-list').innerHTML = '<div class="health-shopping-empty">点击「生成采购单」对比冰箱库存</div>';
+  renderMealPlan();
+  toast('食谱已刷新！');
+  saveHistory('health', '刷新第'+(healthCurrentWeek+1)+'周食谱');
+}
 
 var healthCurrentWeek = 0;
 var healthFridgeEditIdx = -1;
@@ -8262,6 +8397,8 @@ function initHealthPage(){
   updateHealthStreak();
   renderWaterTracker();
   renderFridge();
+  // Ensure all 4 weeks have meal plans generated
+  for(var w=0; w<4; w++){ getActiveMealPlan(w); }
   renderMealPlan();
 }
 
@@ -8378,9 +8515,10 @@ var shopCatColors = {
 };
 
 function getWeekMealText(weekIdx){
-  if(!healthMealPlan[weekIdx]) return '';
+  var plan = getActiveMealPlan(weekIdx);
+  if(!plan) return '';
   var allText = '';
-  healthMealPlan[weekIdx].days.forEach(function(day){
+  plan.days.forEach(function(day){
     allText += ' ' + day.bf + ' ' + day.lu + ' ' + day.dn;
   });
   return allText;
@@ -8539,6 +8677,8 @@ function switchHealthWeek(week){
   document.querySelectorAll('#health-week-toggle button').forEach(function(btn){
     btn.classList.toggle('active', parseInt(btn.dataset.week) === week);
   });
+  // Ensure plan exists for this week
+  getActiveMealPlan(week);
   // Reset shopping list
   document.getElementById('health-shopping-list').innerHTML = '<div class="health-shopping-empty">点击「生成采购单」对比冰箱库存</div>';
   renderMealPlan();
@@ -8546,7 +8686,7 @@ function switchHealthWeek(week){
 
 function renderMealPlan(){
   var container = document.getElementById('health-meal-plan');
-  var week = healthMealPlan[healthCurrentWeek];
+  var week = getActiveMealPlan(healthCurrentWeek);
   var weekTitleHtml = week.title ? '<div class="health-week-title" style="width: 350px; height: 28px;">'+escapeHtml(week.title)+'</div>' : '';
   container.innerHTML = weekTitleHtml + week.days.map(function(day, di){
     // Theme tag: clickable if there are cooked meals
@@ -8669,7 +8809,8 @@ function toggleMealCheck(week, di, meal){
   var cur = isMealChecked(week, di, meal);
   lsSet(getMealCheckKey(week, di, meal), !cur);
   if(!cur){
-    saveHistory('health', '完成餐食: 第'+(week+1)+'周 '+healthMealPlan[week].days[di].day+' '+({bf:'早餐',lu:'午餐',dn:'晚餐'}[meal]));
+    var mp = getActiveMealPlan(week);
+    saveHistory('health', '完成餐食: 第'+(week+1)+'周 '+mp.days[di].day+' '+({bf:'早餐',lu:'午餐',dn:'晚餐'}[meal]));
   }
   renderMealPlan();
 }
@@ -8677,7 +8818,8 @@ function toggleMealCheck(week, di, meal){
 function saveMealReason(week, di, val){
   lsSet(getMealReasonKey(week, di), val);
   if(val.trim()){
-    saveHistory('health', '未完成原因: 第'+(week+1)+'周 '+healthMealPlan[week].days[di].day+' - '+val);
+    var mp = getActiveMealPlan(week);
+    saveHistory('health', '未完成原因: 第'+(week+1)+'周 '+mp.days[di].day+' - '+val);
   }
 }
 
@@ -9494,7 +9636,7 @@ loadBgSetting();
 // App-specific localStorage key prefixes
 var appKeyPrefixes = [
   'plans_','inspire_','engHistory','trivia_','promoCards_','promoMini_',
-  'noteCat_','notes_','health_','health_fridge','health_meals','health_shop',
+  'noteCat_','notes_','health_','health_fridge','health_meals','health_shop','health_mealplan_',
   'history_','usedNewsIdx','usedAesIdx','usedXhsIdx','usedDyIdx','usedAesKIdx',
   'usedPosterIdx','usedEngIdx','usedTabIdx','lastContentUpdate',
   'customAvatar','bgSetting','expense_','expCat_'
