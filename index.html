@@ -5830,22 +5830,6 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
         <span>每周食谱</span>
         <button class="health-fridge-add-btn" onclick="refreshMealPlan()" style="font-size:12px;padding:4px 10px;">🔄 刷新食谱</button>
       </div>
-      <div class="health-week-toggle" id="health-week-toggle">
-        <button class="active" data-week="0" onclick="switchHealthWeek(0)">第一周</button>
-        <button data-week="1" onclick="switchHealthWeek(1)">第二周</button>
-        <button data-week="2" onclick="switchHealthWeek(2)">第三周</button>
-        <button data-week="3" onclick="switchHealthWeek(3)">第四周</button>
-      </div>
-      <!-- Shopping list -->
-      <div class="health-shopping-card">
-        <div class="health-shopping-head">
-          <span class="health-shopping-title">本周采购单</span>
-          <button class="health-shopping-gen-btn" onclick="generateShoppingList()">生成采购单</button>
-        </div>
-        <div id="health-shopping-list">
-          <div class="health-shopping-empty">点击「生成采购单」对比冰箱库存</div>
-        </div>
-      </div>
       <div id="health-meal-plan"></div>
     </div>
   </div>
@@ -8361,19 +8345,17 @@ function getActiveMealPlan(weekIdx){
 
 // Refresh (regenerate) the current week's meal plan
 function refreshMealPlan(){
-  generateMealPlan(healthCurrentWeek);
+  generateMealPlan(0);
   // Clear meal checks and reasons for this week
   for(var di=0; di<7; di++){
-    lsSet(getMealCheckKey(healthCurrentWeek, di, 'bf'), false);
-    lsSet(getMealCheckKey(healthCurrentWeek, di, 'lu'), false);
-    lsSet(getMealCheckKey(healthCurrentWeek, di, 'dn'), false);
-    lsSet(getMealReasonKey(healthCurrentWeek, di), '');
+    lsSet(getMealCheckKey(0, di, 'bf'), false);
+    lsSet(getMealCheckKey(0, di, 'lu'), false);
+    lsSet(getMealCheckKey(0, di, 'dn'), false);
+    lsSet(getMealReasonKey(0, di), '');
   }
-  // Reset shopping list
-  document.getElementById('health-shopping-list').innerHTML = '<div class="health-shopping-empty">点击「生成采购单」对比冰箱库存</div>';
   renderMealPlan();
   toast('食谱已刷新！');
-  saveHistory('health', '刷新第'+(healthCurrentWeek+1)+'周食谱');
+  saveHistory('health', '刷新本周食谱');
 }
 
 var healthCurrentWeek = 0;
@@ -8397,8 +8379,8 @@ function initHealthPage(){
   updateHealthStreak();
   renderWaterTracker();
   renderFridge();
-  // Ensure all 4 weeks have meal plans generated
-  for(var w=0; w<4; w++){ getActiveMealPlan(w); }
+  // Ensure meal plan exists
+  getActiveMealPlan(0);
   renderMealPlan();
 }
 
@@ -8536,6 +8518,8 @@ function getFridgeItemNames(){
 }
 
 function generateShoppingList(){
+  var container = document.getElementById('health-shopping-list');
+  if(!container) return;
   var weekText = getWeekMealText(healthCurrentWeek);
   var fridgeNames = getFridgeItemNames();
   
@@ -8673,14 +8657,8 @@ function delFridgeItem(zoneIdx, itemIdx){
 }
 
 function switchHealthWeek(week){
-  healthCurrentWeek = week;
-  document.querySelectorAll('#health-week-toggle button').forEach(function(btn){
-    btn.classList.toggle('active', parseInt(btn.dataset.week) === week);
-  });
-  // Ensure plan exists for this week
-  getActiveMealPlan(week);
-  // Reset shopping list
-  document.getElementById('health-shopping-list').innerHTML = '<div class="health-shopping-empty">点击「生成采购单」对比冰箱库存</div>';
+  healthCurrentWeek = 0;
+  getActiveMealPlan(0);
   renderMealPlan();
 }
 
