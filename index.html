@@ -599,13 +599,15 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 }
 
 .health-meal-day-card{
-  background:#fff;border-radius:var(--apple-radius);padding:14px;box-shadow:var(--apple-shadow);
-  margin-bottom:10px;
+  background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);
+  margin-bottom:12px;transition:all .25s ease;
 }
+.health-meal-day-card:active{transform:scale(.99);}
 .health-meal-day-head{
-  display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;
+  padding-bottom:10px;border-bottom:1px solid #F2F2F7;
 }
-.health-meal-day-name{font-size:15px;font-weight:700;color:#1D1D1F;}
+.health-meal-day-name{font-size:16px;font-weight:700;color:#1D1D1F;letter-spacing:.5px;}
 .health-meal-day-theme{
   font-size:11px;font-weight:600;color:#86868B;background:#F5F5F7;
   padding:3px 10px;border-radius:980px;
@@ -613,17 +615,21 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 .health-meal-day-theme.cookable{cursor:pointer;transition:var(--apple-transition);background:#E8E8ED;}
 .health-meal-day-theme.cookable:active{opacity:.6;}
 .health-meal-day-theme.cookable::after{content:' 🔍';font-size:10px;}
-.health-meal-row{display:flex;gap:8px;margin-bottom:6px;align-items:flex-start;}
+.health-meal-row{display:flex;gap:10px;margin-bottom:8px;align-items:flex-start;}
 .health-meal-row:last-child{margin-bottom:0;}
 .health-meal-tag{
-  flex-shrink:0;width:36px;font-size:11px;font-weight:700;text-align:center;
-  padding:3px 0;border-radius:6px;color:#fff;
+  flex-shrink:0;width:38px;font-size:11px;font-weight:700;text-align:center;
+  padding:4px 0;border-radius:8px;color:#fff;letter-spacing:.5px;
 }
-.health-meal-tag.bf{background:#1D1D1F;}
-.health-meal-tag.lu{background:#48484A;}
-.health-meal-tag.dn{background:#8E8E93;}
-.health-meal-text{font-size:13px;color:#1D1D1F;line-height:1.5;flex:1;padding-top:2px;}
+.health-meal-tag.bf{background:linear-gradient(135deg,#1D1D1F,#3A3A3C);}
+.health-meal-tag.lu{background:linear-gradient(135deg,#48484A,#636366);}
+.health-meal-tag.dn{background:linear-gradient(135deg,#8E8E93,#AEAEB2);}
+.health-meal-text{font-size:13px;color:#1D1D1F;line-height:1.6;flex:1;padding-top:3px;}
 .health-meal-text .reward{color:#86868B;font-weight:600;}
+.health-meal-text.expandable{color:#1D1D1F;cursor:pointer;transition:var(--apple-transition);}
+.health-meal-text.expandable:active{opacity:.65;}
+.health-meal-text.expandable::after{content:' ▸';font-size:11px;color:#86868B;}
+.health-meal-text.expanded::after{content:' ▾';font-size:11px;color:#86868B;}
 .health-meal-text.cookable{color:#0071E3;text-decoration:underline;text-decoration-color:rgba(0,113,227,.3);text-underline-offset:2px;cursor:pointer;transition:var(--apple-transition);}
 .health-meal-text.cookable:active{opacity:.6;}
 .health-meal-text.cookable::after{content:' 📖';font-size:11px;text-decoration:none;}
@@ -636,8 +642,47 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 .health-meal-check svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;display:none;}
 .health-meal-check.checked svg{display:block;}
 .health-meal-check:active{transform:scale(.88);}
+.health-meal-detail{
+  margin:6px 0 10px 48px;padding:12px 14px;background:#F8F9FA;border-radius:12px;
+  border-left:3px solid #0071E3;animation:mealExpand .25s ease;
+}
+@keyframes mealExpand{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+.health-meal-detail-section{margin-bottom:10px;}
+.health-meal-detail-section:last-child{margin-bottom:0;}
+.health-meal-detail-label{
+  font-size:11px;font-weight:700;color:#86868B;margin-bottom:6px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.health-meal-detail-edit{
+  background:none;border:none;font-size:11px;color:#0071E3;cursor:pointer;
+  font-family:inherit;font-weight:600;padding:2px 6px;border-radius:5px;
+}
+.health-meal-detail-edit:active{background:#E8E8ED;}
+.health-meal-detail-content{
+  font-size:13px;color:#1D1D1F;line-height:1.8;white-space:pre-wrap;
+}
+.health-meal-detail-content[contenteditable="true"]{
+  background:#fff;border:1px solid #0071E3;border-radius:8px;padding:6px 10px;outline:none;
+}
+.health-meal-detail-sides{
+  display:flex;flex-wrap:wrap;gap:5px;
+}
+.health-meal-detail-side-item{
+  font-size:12px;background:#fff;color:#1D1D1F;padding:4px 10px;border-radius:8px;
+  border:1px solid #E5E5EA;
+}
+.health-meal-detail-side-add{
+  font-size:12px;background:#F5F5F7;color:#0071E3;padding:4px 10px;border-radius:8px;
+  border:1px dashed #C7C7CC;cursor:pointer;font-family:inherit;font-weight:600;
+}
+.health-meal-detail-side-add:active{background:#E8E8ED;}
+.health-meal-detail-side-del{
+  background:none;border:none;font-size:12px;color:#C7C7CC;cursor:pointer;
+  padding:0 0 0 4px;font-family:inherit;
+}
+.health-meal-detail-side-del:active{color:#FF3B30;}
 .health-meal-reason{
-  margin-top:8px;background:#F5F5F7;border-radius:10px;padding:10px 12px;
+  margin-top:10px;background:#F5F5F7;border-radius:12px;padding:12px 14px;
 }
 .health-meal-reason-lbl{font-size:11px;font-weight:600;color:#86868B;margin-bottom:4px;}
 .health-meal-reason input{
@@ -646,7 +691,7 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 }
 .health-meal-reason input::placeholder{color:#C7C7CC;}
 .health-meal-day-done{
-  font-size:11px;color:#0071E3;font-weight:600;margin-top:6px;
+  font-size:11px;color:#0071E3;font-weight:600;margin-top:8px;
   display:flex;align-items:center;gap:3px;
 }
 .health-shopping-summary{
@@ -8190,6 +8235,93 @@ var healthDefaultFridge = [
 ];
 
 // Recipe pool - dishes generated based on fridge ingredients
+var recipeDetailDefault = {
+  '【自制-汤面】番茄虾滑汤面（含少量西兰花）': {
+    steps:'1. 番茄切十字口，开水烫30秒去皮切小块\n2. 锅中少许油，下番茄块炒至出汁\n3. 加适量清水煮沸，放入虾滑丸子\n4. 汤沸腾后下面条，煮3-4分钟\n5. 最后放入西兰花小朵，煮1分钟，加盐调味',
+    sides:['水煮蛋','拍黄瓜']
+  },
+  '【自制-拌菜拌面】酸辣蕨根粉（加黄瓜丝瘦肉） + 蒸馒头': {
+    steps:'1. 蕨根粉冷水泡软，沸水中煮5分钟至透明，捞出过凉水\n2. 黄瓜切丝，猪瘦肉切丝用生抽腌制5分钟\n3. 热锅少油炒熟肉丝，盛出备用\n4. 调汁：生抽2勺+醋2勺+蒜末+少许糖+辣椒油\n5. 蕨根粉沥干装盘，铺上黄瓜丝和肉丝，浇汁拌匀\n6. 馒头蒸热搭配食用',
+    sides:['蒸紫薯','温开水']
+  },
+  '【自制-焖炒面类】电饭煲番茄肉酱焖鲜面条': {
+    steps:'1. 猪瘦肉切小丁，番茄切块\n2. 电饭煲底部刷少许油，放入肉丁炒变色\n3. 加入番茄块，倒入1勺生抽+半勺老抽+少许糖\n4. 铺上鲜面条，加适量清水没过面条\n5. 按煮饭键，焖15分钟，开盖拌匀',
+    sides:['水煮蛋','凉拌黄瓜']
+  },
+  '【自制-汤面】三鲜猪肉汤面（含少量胡萝卜片）': {
+    steps:'1. 猪瘦肉切薄片，用料酒和淀粉抓匀腌制5分钟\n2. 胡萝卜切薄片，鸡蛋打散摊成蛋皮后切丝\n3. 锅中清水煮沸，下肉片汆烫变色捞出\n4. 原汤下面条煮3分钟，放入胡萝卜片\n5. 最后放肉片和蛋丝，加盐和白胡椒调味',
+    sides:['蒸南瓜']
+  },
+  '【自制-拌菜拌面】猪肉西兰花拌面（附菜花汤）': {
+    steps:'1. 鲜面条煮至8成熟，捞出过凉水沥干\n2. 西兰花掰小朵焯水1分钟，猪肉切片腌制\n3. 热锅少油炒熟肉片，放入西兰花翻炒\n4. 加入面条，倒入生抽+醋+蒜末拌匀\n5. 菜花切小朵煮汤，加盐调味',
+    sides:['水煮蛋','温开水']
+  },
+  '【自制-焖炒面类】什锦炒鲜面（瘦肉+胡萝卜+西兰花）': {
+    steps:'1. 鲜面条煮至8成熟捞出沥干，拌少许油防粘\n2. 猪瘦肉、胡萝卜切丝，西兰花掰小朵\n3. 热锅少油先炒肉丝变色，盛出\n4. 再炒胡萝卜丝和西兰花，倒回肉丝\n5. 加入面条，生抽2勺+老抽半勺翻炒上色均匀',
+    sides:['水煮蛋']
+  },
+  '【自制-汤面】清汤虾滑丸子面（含少量黄瓜片）': {
+    steps:'1. 虾滑挤成小丸子备用，黄瓜切薄片\n2. 清水煮沸，放入虾滑丸子煮至浮起\n3. 下面条煮3分钟，加黄瓜片煮30秒\n4. 加盐、少许白胡椒、几滴香油调味',
+    sides:['蒸馒头']
+  },
+  '【自制-拌菜拌面】凉拌蕨根粉 + 空气炸虾滑丸': {
+    steps:'1. 蕨根粉煮5分钟至透明，过凉水沥干\n2. 虾滑挤成丸子，空气炸锅180°C炸10分钟\n3. 调汁：生抽+醋+蒜末+辣椒油+少许糖\n4. 蕨根粉装盘浇汁拌匀，搭配虾滑丸',
+    sides:['温开水']
+  },
+  '【自制-焖炒面类】土豆肉丝焖面（含少许胡萝卜丝）': {
+    steps:'1. 土豆去皮切条，胡萝卜切丝，猪瘦肉切丝腌制\n2. 热锅少油炒肉丝变色，加土豆条翻炒\n3. 加生抽、老抽、适量清水，铺上鲜面条\n4. 盖盖中小火焖12分钟，开盖拌匀\n5. 撒胡萝卜丝点缀',
+    sides:['水煮蛋']
+  },
+  '【自制-汤面】酸辣浓汤瘦肉面（含少量菜花碎）': {
+    steps:'1. 猪瘦肉切薄片腌制，菜花切碎\n2. 清水煮沸下面条煮2分钟\n3. 放入肉片和菜花碎，煮2分钟\n4. 加生抽、醋、白胡椒、辣椒油调味',
+    sides:['蒸馒头']
+  },
+  '【自制-拌菜拌面】西兰花虾滑拌面（附番茄蛋花汤）': {
+    steps:'1. 鲜面条煮熟过凉水沥干\n2. 西兰花焯水，虾滑煮熟切片\n3. 番茄切块煮汤，淋入蛋液成蛋花\n4. 面条上铺西兰花和虾滑，浇生抽+醋+蒜末拌匀',
+    sides:['温开水']
+  },
+  '【自制-焖炒面类】西兰花虾滑炒鲜面': {
+    steps:'1. 鲜面条煮至8成熟捞出沥干\n2. 西兰花掰小朵焯水，虾滑切片\n3. 热锅少油先炒虾滑片，加西兰花翻炒\n4. 倒入面条，加生抽和老抽翻炒上色',
+    sides:['水煮蛋']
+  },
+  '【自制-汤面】番茄土豆瘦肉汤面（含少量西兰花）': {
+    steps:'1. 番茄去皮切块，土豆切小块，瘦肉切片腌制\n2. 热锅少油炒番茄出汁，加土豆块翻炒\n3. 加清水煮沸，下肉片煮变色\n4. 下面条煮3分钟，加西兰花煮1分钟，盐调味',
+    sides:['蒸馒头']
+  },
+  '【自制-拌菜拌面】土豆肉丝拌鲜面（附菜花汤）': {
+    steps:'1. 土豆切丝泡水，猪瘦肉切丝腌制\n2. 鲜面条煮熟过凉水沥干\n3. 热锅少油炒肉丝，加土豆丝炒熟\n4. 菜花煮汤加盐调味\n5. 面条装盘，铺上炒菜，浇生抽+醋拌匀',
+    sides:['水煮蛋']
+  },
+  '【自制-焖炒面类】电饭煲瘦肉蔬菜焖面': {
+    steps:'1. 猪瘦肉切丁，土豆和胡萝卜切丁\n2. 电饭煲刷油，放入肉丁炒变色\n3. 加蔬菜丁、生抽、老抽、清水\n4. 铺上面条，按煮饭键焖15分钟，拌匀',
+    sides:['水煮蛋','拍黄瓜']
+  },
+  '【自制-汤面】蔬菜虾滑小馄饨汤面（含少量黄瓜丝）': {
+    steps:'1. 虾滑包入小馄饨皮，黄瓜切丝\n2. 清水煮沸，下馄饨煮至浮起\n3. 加入鲜面条煮3分钟，放黄瓜丝\n4. 加盐、香油、少许白胡椒调味',
+    sides:['温开水']
+  },
+  '番茄虾滑浓汤': {
+    steps:'1. 番茄去皮切块，虾滑挤成小丸\n2. 锅中少油炒番茄至出汁\n3. 加清水煮沸，放入虾滑丸子\n4. 煮5分钟至汤汁浓稠，加盐调味',
+    sides:['蒸馒头']
+  },
+  '水煮虾滑': {
+    steps:'1. 清水煮沸，转中小火\n2. 虾滑用勺挤成丸子，逐个放入\n3. 煮至丸子浮起再煮2分钟\n4. 捞出蘸生抽+蒜末食用',
+    sides:['拍黄瓜']
+  },
+  '水煮西兰花': {
+    steps:'1. 西兰花掰小朵洗净\n2. 沸水加少许盐和油，放入西兰花\n3. 煮2分钟至刚断生，捞出沥干\n4. 可蘸生抽或蒜蓉酱食用',
+    sides:['蒸紫薯']
+  },
+  '番茄蛋花汤': {
+    steps:'1. 番茄去皮切小块，鸡蛋打散\n2. 清水煮沸，放入番茄块煮3分钟\n3. 淋入蛋液，用筷子划散成蛋花\n4. 加盐、香油调味',
+    sides:['蒸馒头']
+  },
+  '瘦肉清粥': {
+    steps:'1. 猪瘦肉切末，用料酒腌制5分钟\n2. 大米淘净加足量清水，电饭煲煮粥模式\n3. 粥快好时加入肉末，搅拌煮熟\n4. 加盐、白胡椒调味',
+    sides:['拍黄瓜']
+  }
+};
+
 var recipePool = {
   bf: [
     {name:'煮鸡蛋 + 蒸紫薯', need:['鸡蛋','紫薯']},
@@ -8331,6 +8463,17 @@ function generateMealPlan(weekIdx){
     days.push({day: dayNames[di], theme:'', bf: pickBf.name, lu: luName, dn: pickDn.name});
   }
 
+  // Attach steps & sides from recipeDetailDefault
+  days.forEach(function(day){
+    ['bf','lu','dn'].forEach(function(tag){
+      var mealName = day[tag];
+      var detail = recipeDetailDefault[mealName];
+      if(detail){
+        day.steps = detail.steps;
+        day.sides = detail.sides ? detail.sides.slice() : [];
+      }
+    });
+  });
   var plan = {title:'本周食谱', days: days};
   lsSet('health_mealplan_'+weekIdx, plan);
   return plan;
@@ -8662,6 +8805,30 @@ function switchHealthWeek(week){
   renderMealPlan();
 }
 
+function isMealExpandable(tag, dayIdx, raw){
+  // Dinner always expandable; Tue(1)/Thu(3)/Sat(5)/Sun(6) lunch expandable; breakfast never
+  if(tag === 'dn') return true;
+  if(tag === 'lu' && (dayIdx === 1 || dayIdx === 3 || dayIdx === 5 || dayIdx === 6)){
+    return isCookedMeal(raw) && raw.indexOf('食堂') < 0 && raw.indexOf('盒饭') < 0;
+  }
+  return false;
+}
+
+function getMealDetailKey(week, di, meal){
+  return 'health_mealdetail_'+week+'_'+di+'_'+meal;
+}
+
+function getMealDetail(week, di, meal, day){
+  var key = getMealDetailKey(week, di, meal);
+  var stored = lsGet(key, null);
+  if(stored) return stored;
+  return {steps: day.steps || '', sides: day.sides ? day.sides.slice() : []};
+}
+
+function saveMealDetail(week, di, meal, steps, sides){
+  lsSet(getMealDetailKey(week, di, meal), {steps: steps, sides: sides});
+}
+
 function renderMealPlan(){
   var container = document.getElementById('health-meal-plan');
   var week = getActiveMealPlan(healthCurrentWeek);
@@ -8675,25 +8842,50 @@ function renderMealPlan(){
     }
     var checkSvg = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>';
     var meals = [
-      {tag:'bf',label:'早餐',raw:day.bf},
-      {tag:'lu',label:'午餐',raw:day.lu},
-      {tag:'dn',label:'晚餐',raw:day.dn}
+      {tag:'bf',label:'早',raw:day.bf},
+      {tag:'lu',label:'午',raw:day.lu},
+      {tag:'dn',label:'晚',raw:day.dn}
     ];
     var rowsHtml = meals.map(function(ml){
       var checked = isMealChecked(healthCurrentWeek, di, ml.tag);
       var cooked = isCookedMeal(ml.raw);
+      var expandable = isMealExpandable(ml.tag, di, ml.raw);
       var textHtml;
       if(ml.raw.indexOf('🎉') >= 0){
         textHtml = '<span class="reward">'+escapeHtml(ml.raw)+'</span>';
+      } else if(expandable){
+        textHtml = '<span class="expandable" id="meal-text-'+di+'-'+ml.tag+'" onclick="toggleMealDetail('+healthCurrentWeek+','+di+',\''+ml.tag+'\')">'+escapeHtml(ml.raw)+'</span>';
       } else if(cooked){
         var kw = getMealSearchKeyword(ml.raw, day.theme);
         textHtml = '<span class="cookable" onclick="event.stopPropagation();openXhsSearch(\''+escapeAttr(kw)+'\')">'+escapeHtml(ml.raw)+'</span>';
       } else {
         textHtml = escapeHtml(ml.raw);
       }
+      var detailHtml = '';
+      if(expandable){
+        var detail = getMealDetail(healthCurrentWeek, di, ml.tag, day);
+        var sidesHtml = (detail.sides || []).map(function(s, si){
+          return '<span class="health-meal-detail-side-item">'+escapeHtml(s)+
+            '<button class="health-meal-detail-side-del" onclick="removeMealSide('+healthCurrentWeek+','+di+',\''+ml.tag+'\','+si+')">×</button></span>';
+        }).join('');
+        sidesHtml += '<button class="health-meal-detail-side-add" onclick="addMealSide('+healthCurrentWeek+','+di+',\''+ml.tag+'\')">+ 配菜</button>';
+        detailHtml = '<div class="health-meal-detail" id="meal-detail-'+di+'-'+ml.tag+'" style="display:none;">'+
+          '<div class="health-meal-detail-section">'+
+            '<div class="health-meal-detail-label">'+
+              '<span>详细做法</span>'+
+              '<button class="health-meal-detail-edit" onclick="editMealSteps('+healthCurrentWeek+','+di+',\''+ml.tag+'\')">编辑</button>'+
+            '</div>'+
+            '<div class="health-meal-detail-content" id="meal-steps-'+di+'-'+ml.tag+'">'+escapeHtml(detail.steps || '暂无做法，点击编辑添加')+'</div>'+
+          '</div>'+
+          '<div class="health-meal-detail-section">'+
+            '<div class="health-meal-detail-label"><span>配菜</span></div>'+
+            '<div class="health-meal-detail-sides">'+sidesHtml+'</div>'+
+          '</div>'+
+        '</div>';
+      }
       return '<div class="health-meal-row">'+
         '<div class="health-meal-tag '+ml.tag+'">'+ml.label+'</div>'+
-        '<div class="health-meal-text">'+textHtml+'</div>'+
+        '<div class="health-meal-text">'+textHtml+detailHtml+'</div>'+
         '<div class="health-meal-check'+(checked?' checked':'')+'" onclick="toggleMealCheck('+healthCurrentWeek+','+di+',\''+ml.tag+'\')">'+checkSvg+'</div>'+
       '</div>';
     }).join('');
@@ -8717,6 +8909,58 @@ function renderMealPlan(){
       footerHtml+
     '</div>';
   }).join('');
+}
+
+function toggleMealDetail(week, di, meal){
+  var detail = document.getElementById('meal-detail-'+di+'-'+meal);
+  var text = document.getElementById('meal-text-'+di+'-'+meal);
+  if(!detail) return;
+  var isShown = detail.style.display !== 'none';
+  detail.style.display = isShown ? 'none' : 'block';
+  if(text){ text.classList.toggle('expanded', !isShown); }
+}
+
+function editMealSteps(week, di, meal){
+  var el = document.getElementById('meal-steps-'+di+'-'+meal);
+  if(!el) return;
+  var plan = getActiveMealPlan(week);
+  var day = plan.days[di];
+  var detail = getMealDetail(week, di, meal, day);
+  if(el.getAttribute('contenteditable') === 'true'){
+    // Save
+    var newSteps = el.innerText.trim();
+    detail.steps = newSteps;
+    saveMealDetail(week, di, meal, detail.steps, detail.sides);
+    el.removeAttribute('contenteditable');
+    el.textContent = newSteps || '暂无做法，点击编辑添加';
+    toast('做法已保存');
+  } else {
+    el.setAttribute('contenteditable', 'true');
+    el.textContent = detail.steps || '';
+    el.focus();
+  }
+}
+
+function addMealSide(week, di, meal){
+  var plan = getActiveMealPlan(week);
+  var day = plan.days[di];
+  var detail = getMealDetail(week, di, meal, day);
+  var name = prompt('输入配菜名称：');
+  if(!name || !name.trim()) return;
+  if(!detail.sides) detail.sides = [];
+  detail.sides.push(name.trim());
+  saveMealDetail(week, di, meal, detail.steps, detail.sides);
+  renderMealPlan();
+}
+
+function removeMealSide(week, di, meal, si){
+  var plan = getActiveMealPlan(week);
+  var day = plan.days[di];
+  var detail = getMealDetail(week, di, meal, day);
+  if(!detail.sides) return;
+  detail.sides.splice(si, 1);
+  saveMealDetail(week, di, meal, detail.steps, detail.sides);
+  renderMealPlan();
 }
 
 function isCookedMeal(text){
@@ -9614,7 +9858,7 @@ loadBgSetting();
 // App-specific localStorage key prefixes
 var appKeyPrefixes = [
   'plans_','inspire_','engHistory','trivia_','promoCards_','promoMini_',
-  'noteCat_','notes_','health_','health_fridge','health_meals','health_shop','health_mealplan_',
+  'noteCat_','notes_','health_','health_fridge','health_meals','health_shop','health_mealplan_','health_mealdetail_',
   'history_','usedNewsIdx','usedAesIdx','usedXhsIdx','usedDyIdx','usedAesKIdx',
   'usedPosterIdx','usedEngIdx','usedTabIdx','lastContentUpdate',
   'customAvatar','bgSetting','expense_','expCat_'
