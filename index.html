@@ -40,6 +40,39 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 .page-scroll::-webkit-scrollbar,.tag-scroll::-webkit-scrollbar,.note-cat-scroll::-webkit-scrollbar{display:none;}
 .tag-scroll,.note-cat-scroll{-ms-overflow-style:none;scrollbar-width:none;}
 
+
+/* ===== BOTTOM TAB BAR (WeChat style) ===== */
+.tab-bar{
+  position:absolute;bottom:0;left:0;right:0;
+  display:flex;align-items:center;justify-content:space-around;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid rgba(0,0,0,.08);
+  padding:6px 0 calc(6px + env(safe-area-inset-bottom));
+  z-index:90;
+}
+.tab-bar.hidden{display:none;}
+.tab-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+  cursor:pointer;padding:4px 0;transition:var(--apple-transition);
+  -webkit-tap-highlight-color:transparent;
+}
+.tab-item:active{transform:scale(.9);}
+.tab-icon{
+  width:26px;height:26px;fill:none;stroke:#86868B;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round;transition:var(--apple-transition);
+}
+.tab-label{
+  font-size:10px;color:#86868B;font-weight:500;transition:var(--apple-transition);
+}
+.tab-item.active .tab-icon{stroke:#0071E3;}
+.tab-item.active .tab-label{color:#0071E3;font-weight:700;}
+
+/* Hide header back buttons on main pages when tab bar is visible */
+.page-with-tab .header-back{display:none !important;}
+
+/* Adjust page-scroll bottom padding for tab bar */
+.page-with-tab .page-scroll{padding-bottom:calc(60px + env(safe-area-inset-bottom));}
+
 /* ===== LOGIN PAGE ===== */
 #page-login{background:#1D1D1F;align-items:center;justify-content:center;}
 .login-container{display:flex;flex-direction:column;align-items:center;gap:28px;}
@@ -5614,7 +5647,7 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 <div class="bg-layer" id="bg-layer" style="background: rgb(29, 29, 31); opacity: 1;"></div>
 
 <!-- ==================== LOGIN PAGE ==================== -->
-<div id="page-login" class="page hidden">
+<div id="page-login" class="page">
   <div class="login-container">
     <div class="login-avatar" id="login-avatar" onclick="document.getElementById('avatar-upload').click()">
       
@@ -5630,7 +5663,7 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 </div>
 
 <!-- ==================== NAV PAGE ==================== -->
-<div id="page-nav" class="page">
+<div id="page-nav" class="page hidden">
   <div class="nav-header">
     <button class="nav-back" onclick="showPage('page-login')"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
     <button class="nav-settings" onclick="openBgModal()"><svg class="svg-icon" viewBox="0 0 24 24" style="width:26px;height:26px;"><circle cx="12" cy="12" r="11" fill="none" stroke="#E0E0E0" stroke-width="0.5"></circle><path d="M12 1 A11 11 0 0 1 22.52 7.5 L17.66 7.5 A6 6 0 0 0 12 4.5 Z" fill="#FF3B30"></path><path d="M22.52 7.5 A11 11 0 0 1 22.52 16.5 L17.66 16.5 A6 6 0 0 0 17.66 7.5 Z" fill="#FF9500"></path><path d="M22.52 16.5 A11 11 0 0 1 12 23 L12 18 A6 6 0 0 0 17.66 16.5 Z" fill="#FFCC00"></path><path d="M12 23 A11 11 0 0 1 1.48 16.5 L6.34 16.5 A6 6 0 0 0 12 18 Z" fill="#34C759"></path><path d="M1.48 16.5 A11 11 0 0 1 1.48 7.5 L6.34 7.5 A6 6 0 0 0 6.34 16.5 Z" fill="#007AFF"></path><path d="M1.48 7.5 A11 11 0 0 1 12 1 L12 4.5 A6 6 0 0 0 6.34 7.5 Z" fill="#AF52DE"></path><circle cx="12" cy="12" r="4" fill="none" stroke="#fff" stroke-width="1.5"></circle></svg></button>
@@ -5666,14 +5699,15 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 <div id="page-plan" class="page hidden">
   <div class="page-header">
     <div class="header-left">
-      <button class="header-back" onclick="showPage('page-nav')"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+      <button class="header-back" onclick="showPage('page-plan')"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
       <div>
-        <div class="header-greeting"><span class="name" id="plan-name">代代</span> <span id="plan-time-greeting">下午好</span></div>
+        <div class="header-greeting"><span class="name" id="plan-name">代代</span> <span id="plan-time-greeting">下午好</span> <button onclick="logout()" style="background:none;border:none;font-size:12px;color:#86868B;cursor:pointer;margin-left:8px;">退出</button></div>
         <div class="header-date" id="plan-date">2026年8月10日</div>
       </div>
     </div>
-    <div class="header-right" onclick="openHistory('plan')">
-      <div class="hist-title">历史记录</div>
+    <div class="header-right" style="display:flex;align-items:center;gap:12px;">
+      <button class="nav-data-btn" onclick="openDataModal()" style="width:32px;height:32px;"><svg class="svg-icon" viewBox="0 0 24 24" style="width:18px;height:18px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></button>
+      <div onclick="openHistory('plan')" style="cursor:pointer;"><div class="hist-title">历史记录</div></div>
     </div>
   </div>
   <div class="page-scroll plan-body">
@@ -5735,7 +5769,7 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 <div id="page-work" class="page hidden">
   <div class="page-header">
     <div class="header-left">
-      <button class="header-back" onclick="showPage('page-nav')"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+      <button class="header-back" onclick="showPage('page-plan')"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
       <div>
         <div class="header-greeting"><span class="name">代代</span> <span id="work-time-greeting">下午好</span></div>
         <div class="header-date" id="work-date">2026年8月10日</div>
@@ -5815,7 +5849,7 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 <div id="page-notes" class="page hidden">
   <div class="page-header">
     <div class="header-left">
-      <button class="header-back" onclick="showPage('page-nav')"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+      <button class="header-back" onclick="showPage('page-plan')"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
       <div>
         <div class="header-greeting"><span class="name" id="notes-name">代代</span> <span id="notes-time-greeting">下午好</span></div>
         <div class="header-date" id="notes-date">2026年8月10日</div>
@@ -5832,7 +5866,7 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 <div id="page-health" class="page hidden">
   <div class="page-header">
     <div class="header-left">
-      <button class="header-back" onclick="showPage('page-nav')"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+      <button class="header-back" onclick="showPage('page-plan')"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
       <div>
         <div class="header-greeting"><span class="name" id="health-name">代代</span> <span id="health-time-greeting">下午好</span></div>
         <div class="header-date" id="health-date">2026年8月14日</div>
@@ -5914,7 +5948,7 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 <div id="page-hot" class="page hidden">
   <div class="page-header">
     <div class="header-left">
-      <button class="header-back" onclick="showPage('page-nav')"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+      <button class="header-back" onclick="showPage('page-plan')"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
       <div>
         <div class="header-greeting"><span class="name" id="hot-name">代代</span> <span id="hot-time-greeting">下午好</span></div>
         <div class="header-date" id="hot-date">2026年8月10日</div>
@@ -5973,7 +6007,7 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 <div id="page-expense" class="page hidden">
   <div class="page-header">
     <div class="header-left">
-      <button class="header-back" onclick="showPage('page-nav')"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+      <button class="header-back" onclick="showPage('page-plan')"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
       <div>
         <div class="header-greeting"><span class="name" id="exp-name">代代</span> <span id="exp-time-greeting">上午好</span></div>
         <div class="header-date" id="exp-date">2026年8月7日</div>
@@ -7382,7 +7416,19 @@ function showPage(id){
     var el = document.getElementById(id);
     if(!el){console.error('Page not found: '+id);return;}
     el.classList.remove('hidden');
-    if(id==='page-nav') updateNavPersona();
+    // Show/hide tab bar based on page
+    var tabBar = document.getElementById('tab-bar');
+    var mainPages = ['page-plan','page-work','page-notes','page-health','page-expense'];
+    if(mainPages.indexOf(id) >= 0){
+      tabBar.classList.remove('hidden');
+      el.classList.add('page-with-tab');
+      // Update active tab
+      document.querySelectorAll('.tab-item').forEach(function(t){
+        t.classList.toggle('active', t.dataset.page === id);
+      });
+    } else {
+      tabBar.classList.add('hidden');
+    }
     if(id==='page-plan') initPlanPage();
     if(id==='page-work') initWorkPage();
     if(id==='page-promo') initPromoPage();
@@ -7393,6 +7439,15 @@ function showPage(id){
   }catch(e){
     console.error('showPage error:',e);
   }
+}
+
+function switchTab(pageId){
+  showPage(pageId);
+}
+
+function logout(){
+  showPage('page-login');
+  document.getElementById('tab-bar').classList.add('hidden');
 }
 
 /* ================================================================
@@ -7448,7 +7503,7 @@ function doLogin(){
   if(pwd==='0408'){
     document.getElementById('pwd-error').textContent='';
     document.getElementById('pwd-input').value='';
-    showPage('page-nav');
+    showPage('page-plan');
   } else {
     document.getElementById('pwd-error').textContent='密码错误，请重新输入';
   }
