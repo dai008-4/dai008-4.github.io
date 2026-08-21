@@ -5663,31 +5663,27 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 </div>
 
 <!-- ==================== NAV PAGE ==================== -->
-<div id="page-nav" class="page hidden">
-  <div class="nav-header">
-    <button class="nav-back" onclick="showPage('page-login')"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
-    <button class="nav-settings" onclick="openBgModal()"><svg class="svg-icon" viewBox="0 0 24 24" style="width:26px;height:26px;"><circle cx="12" cy="12" r="11" fill="none" stroke="#E0E0E0" stroke-width="0.5"></circle><path d="M12 1 A11 11 0 0 1 22.52 7.5 L17.66 7.5 A6 6 0 0 0 12 4.5 Z" fill="#FF3B30"></path><path d="M22.52 7.5 A11 11 0 0 1 22.52 16.5 L17.66 16.5 A6 6 0 0 0 17.66 7.5 Z" fill="#FF9500"></path><path d="M22.52 16.5 A11 11 0 0 1 12 23 L12 18 A6 6 0 0 0 17.66 16.5 Z" fill="#FFCC00"></path><path d="M12 23 A11 11 0 0 1 1.48 16.5 L6.34 16.5 A6 6 0 0 0 12 18 Z" fill="#34C759"></path><path d="M1.48 16.5 A11 11 0 0 1 1.48 7.5 L6.34 7.5 A6 6 0 0 0 6.34 16.5 Z" fill="#007AFF"></path><path d="M1.48 7.5 A11 11 0 0 1 12 1 L12 4.5 A6 6 0 0 0 6.34 7.5 Z" fill="#AF52DE"></path><circle cx="12" cy="12" r="4" fill="none" stroke="#fff" stroke-width="1.5"></circle></svg></button>
-    <button class="nav-data-btn" onclick="openDataModal()"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></button>
+<div id="page-nav" class="page hidden" style="display:none;"></div>
+
+<!-- ==================== BOTTOM TAB BAR ==================== -->
+<div id="tab-bar" class="tab-bar hidden">
+  <div class="tab-item active" data-page="page-plan" onclick="switchTab('page-plan')">
+    <svg class="tab-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M8 2h8v4H8z"></path><path d="M9 14l2 2 4-4"></path></svg>
+    <span class="tab-label">计划</span>
   </div>
-  <div class="nav-body">
-    <div class="nav-grid">
-      <div class="nav-card c1" onclick="showPage('page-plan')">
-        <div class="icon"><svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M8 2h8v4H8z"></path><path d="M9 14l2 2 4-4"></path></svg></div>
-        <div>观观&amp;今日计划</div>
-      </div>
-      <div class="nav-card c2" onclick="showPage('page-work')">
-        <div class="icon"><svg class="svg-icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></div>
-        <div>代代&amp;工作</div>
-      </div>
-      <div class="nav-card c3" onclick="showPage('page-notes')">
-        <div class="icon"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg></div>
-        <div>学习笔记</div>
-      </div>
-      <div class="nav-card c4" onclick="showPage('page-health')">
-        <div class="icon"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v1H7a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h.5L9 20a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2l1.5-9H17a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-2V5a3 3 0 0 0-3-3z"></path><path d="M12 8v4"></path></svg></div>
-        <div>健康饮食</div>
-      </div>
-    </div>
+  <div class="tab-item" data-page="page-work" onclick="switchTab('page-work')">
+    <svg class="tab-icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+    <span class="tab-label">工作</span>
+  </div>
+  <div class="tab-item" data-page="page-health" onclick="switchTab('page-health')">
+    <svg class="tab-icon" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v1H7a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h.5L9 20a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2l1.5-9H17a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-2V5a3 3 0 0 0-3-3z"></path><path d="M12 8v4"></path></svg>
+    <span class="tab-label">饮食</span>
+  </div>
+  <div class="tab-item" data-page="page-expense" onclick="switchTab('page-expense')">
+    <svg class="tab-icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+    <span class="tab-label">花销</span>
+  </div>
+</div>
     <div class="nav-card c5" onclick="showPage('page-expense')">
       <div class="icon"><svg class="svg-icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg></div>
       <div>本月花销</div>
@@ -7418,7 +7414,7 @@ function showPage(id){
     el.classList.remove('hidden');
     // Show/hide tab bar based on page
     var tabBar = document.getElementById('tab-bar');
-    var mainPages = ['page-plan','page-work','page-notes','page-health','page-expense'];
+    var mainPages = ['page-plan','page-work','page-health','page-expense'];
     if(mainPages.indexOf(id) >= 0){
       tabBar.classList.remove('hidden');
       el.classList.add('page-with-tab');
