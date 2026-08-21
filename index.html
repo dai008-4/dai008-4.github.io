@@ -739,15 +739,19 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 .expense-body{padding:4px 16px 24px;}
 /* Date bar */
 .exp-date-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.exp-date-info{display:flex;flex-direction:column;gap:2px;}
-.exp-date-info .date-main{font-size:18px;font-weight:700;color:#1D1D1F;}
-.exp-date-info .date-weekday{font-size:12px;color:#86868B;font-weight:500;}
-/* View toggle */
-.exp-view-toggle{display:flex;background:#E5E5EA;border-radius:9px;padding:2px;gap:2px;}
-.exp-view-toggle button{
-  border:none;background:transparent;font-size:12px;font-weight:600;color:#86868B;
-  padding:5px 10px;border-radius:7px;cursor:pointer;transition:var(--apple-transition);font-family:inherit;
+.exp-date-info{
+  display:flex;align-items:center;gap:8px;flex:1;
+  justify-content:space-between;
 }
+.exp-nav-btn{
+  background:none;border:none;font-size:20px;color:#1D1D1F;
+  width:32px;height:32px;border-radius:8px;cursor:pointer;
+  font-family:inherit;font-weight:300;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  transition:var(--apple-transition);
+}
+.exp-nav-btn:active{background:#F5F5F7;}
+.exp-nav-btn:disabled{color:#C7C7CC;cursor:not-allowed;}
 .exp-view-toggle button.active{background:#fff;color:#1D1D1F;box-shadow:0 1px 3px rgba(0,0,0,.1);}
 /* Pie + category layout */
 .exp-main-area{display:flex;gap:14px;margin-bottom:16px;}
@@ -5983,8 +5987,12 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
     <!-- Date bar + view toggle -->
     <div class="exp-date-bar">
       <div class="exp-date-info">
-        <div class="date-main" id="exp-date-main"></div>
-        <div class="date-weekday" id="exp-date-weekday"></div>
+        <button class="exp-nav-btn" onclick="expPrevPeriod()">‹</button>
+        <div style="text-align:center;">
+          <div class="date-main" id="exp-date-main"></div>
+          <div class="date-weekday" id="exp-date-weekday"></div>
+        </div>
+        <button class="exp-nav-btn" onclick="expNextPeriod()">›</button>
       </div>
       <div class="exp-view-toggle">
         <button class="active" data-view="day" onclick="switchExpView('day')">日</button>
@@ -9176,6 +9184,65 @@ function switchExpView(view){
   renderExpensePage();
 }
 
+function isWithinOneYear(date){
+  var now = new Date();
+  var oneYearAgo = new Date(now.getFullYear()-1, now.getMonth(), now.getDate());
+  return date >= oneYearAgo && date <= now;
+}
+
+function expPrevPeriod(){
+  var newDate = new Date(expCurrentDate);
+  if(expCurrentView === 'day'){
+    newDate.setDate(newDate.getDate() - 1);
+  } else if(expCurrentView === 'week'){
+    newDate.setDate(newDate.getDate() - 7);
+  } else if(expCurrentView === 'halfmonth'){
+    var d = newDate.getDate();
+    if(d <= 15){
+      // Go to second half of previous month
+      newDate = new Date(newDate.getFullYear(), newDate.getMonth()-1, 16);
+    } else {
+      // Go to first half of same month
+      newDate.setDate(1);
+    }
+  } else { // month
+    newDate = new Date(newDate.getFullYear(), newDate.getMonth()-1, 1);
+  }
+  if(isWithinOneYear(newDate)){
+    expCurrentDate = newDate;
+    renderExpensePage();
+  } else {
+    toast('只能查看近一年的记录');
+  }
+}
+
+function expNextPeriod(){
+  var newDate = new Date(expCurrentDate);
+  if(expCurrentView === 'day'){
+    newDate.setDate(newDate.getDate() + 1);
+  } else if(expCurrentView === 'week'){
+    newDate.setDate(newDate.getDate() + 7);
+  } else if(expCurrentView === 'halfmonth'){
+    var d = newDate.getDate();
+    var lastDay = new Date(newDate.getFullYear(), newDate.getMonth()+1, 0).getDate();
+    if(d <= 15){
+      // Go to second half of same month
+      newDate.setDate(16);
+    } else {
+      // Go to first half of next month
+      newDate = new Date(newDate.getFullYear(), newDate.getMonth()+1, 1);
+    }
+  } else { // month
+    newDate = new Date(newDate.getFullYear(), newDate.getMonth()+1, 1);
+  }
+  if(isWithinOneYear(newDate)){
+    expCurrentDate = newDate;
+    renderExpensePage();
+  } else {
+    toast('只能查看近一年的记录');
+  }
+}
+
 function getExpDataForDate(date){
   var y = date.getFullYear();
   var m = (date.getMonth()+1);
@@ -9187,6 +9254,13 @@ function getExpDataForDate(date){
     data = {cats:new Array(expCats.length).fill('')};
     lsSet(key, data);
   }
+  // Build details from cats for day view
+  var details = [];
+  for(var c=0;c<expCats.length;c++){
+    var v = parseFloat(data.cats[c]);
+    if(!isNaN(v) && v > 0) details.push({date:new Date(y,m-1,d), cat:c, amount:v});
+  }
+  data.details = details;
   return data;
 }
 
@@ -9281,6 +9355,29 @@ function getExpDataForMonth(date){
 function renderExpensePage(){
   var dateMain = document.getElementById('exp-date-main');
   var dateWeekday = document.getElementById('exp-date-weekday');
+  // Update nav button states
+  var navBtns = document.querySelectorAll('.exp-nav-btn');
+  if(navBtns.length >= 2){
+    // Check prev
+    var prevDate = new Date(expCurrentDate);
+    if(expCurrentView === 'day') prevDate.setDate(prevDate.getDate()-1);
+    else if(expCurrentView === 'week') prevDate.setDate(prevDate.getDate()-7);
+    else if(expCurrentView === 'halfmonth'){
+      if(prevDate.getDate() <= 15) prevDate = new Date(prevDate.getFullYear(), prevDate.getMonth()-1, 16);
+      else prevDate.setDate(1);
+    } else prevDate = new Date(prevDate.getFullYear(), prevDate.getMonth()-1, 1);
+    navBtns[0].disabled = !isWithinOneYear(prevDate);
+    // Check next
+    var nextDate = new Date(expCurrentDate);
+    if(expCurrentView === 'day') nextDate.setDate(nextDate.getDate()+1);
+    else if(expCurrentView === 'week') nextDate.setDate(nextDate.getDate()+7);
+    else if(expCurrentView === 'halfmonth'){
+      var lastDay = new Date(nextDate.getFullYear(), nextDate.getMonth()+1, 0).getDate();
+      if(nextDate.getDate() <= 15) nextDate.setDate(16);
+      else nextDate = new Date(nextDate.getFullYear(), nextDate.getMonth()+1, 1);
+    } else nextDate = new Date(nextDate.getFullYear(), nextDate.getMonth()+1, 1);
+    navBtns[1].disabled = !isWithinOneYear(nextDate);
+  }
   var pieLbl = document.getElementById('exp-pie-lbl');
   var pieTotal = document.getElementById('exp-pie-total');
   var pieLegend = document.getElementById('exp-pie-legend');
@@ -9449,7 +9546,11 @@ function renderExpensePage(){
       '</div>';
     }).join('');
   } else {
-    detailList.innerHTML = noteHtml + '<div class="exp-detail-empty" onclick="editWeekNote()">暂无记录，点击记录本周情况</div>';
+    if(expCurrentView === 'week'){
+      detailList.innerHTML = noteHtml + '<div class="exp-detail-empty" onclick="editWeekNote()">暂无记录，点击记录本周情况</div>';
+    } else {
+      detailList.innerHTML = noteHtml + '<div class="exp-detail-empty" style="cursor:default;">暂无明细记录</div>';
+    }
   }
   
   // Month total
@@ -9861,7 +9962,7 @@ var appKeyPrefixes = [
   'noteCat_','notes_','health_','health_fridge','health_meals','health_shop','health_mealplan_','health_mealdetail_',
   'history_','usedNewsIdx','usedAesIdx','usedXhsIdx','usedDyIdx','usedAesKIdx',
   'usedPosterIdx','usedEngIdx','usedTabIdx','lastContentUpdate',
-  'customAvatar','bgSetting','expense_','expCat_'
+  'customAvatar','bgSetting','expense_','expense_v8_','expCat_'
 ];
 
 function isAppKey(key){
