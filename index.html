@@ -5594,7 +5594,7 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 <div class="bg-layer" id="bg-layer" style="background: rgb(29, 29, 31); opacity: 1;"></div>
 
 <!-- ==================== LOGIN PAGE ==================== -->
-<div id="page-login" class="page">
+<div id="page-login" class="page hidden" style="display:none;">
   <div class="login-container">
     <div class="login-avatar" id="login-avatar" onclick="document.getElementById('avatar-upload').click()">
       
@@ -5613,7 +5613,7 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 <div id="page-nav" class="page hidden" style="display:none;"></div>
 
 <!-- ==================== BOTTOM TAB BAR ==================== -->
-<div id="tab-bar" class="tab-bar hidden">
+<div id="tab-bar" class="tab-bar">
   <div class="tab-item active" data-page="page-plan" onclick="switchTab('page-plan')">
     <svg class="tab-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M8 2h8v4H8z"></path><path d="M9 14l2 2 4-4"></path></svg>
     <span class="tab-label">计划</span>
@@ -5634,7 +5634,7 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 
 
 <!-- ==================== 观观&今日计划 PAGE ==================== -->
-<div id="page-plan" class="page hidden">
+<div id="page-plan" class="page">
   <div class="page-header">
     <div class="header-left">
       <button class="header-back" onclick="showPage('page-plan')"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
@@ -7400,8 +7400,7 @@ function switchTab(pageId){
 }
 
 function logout(){
-  showPage('page-login');
-  document.getElementById('tab-bar').classList.add('hidden');
+  location.reload();
 }
 
 /* ================================================================
@@ -7457,24 +7456,28 @@ function doLogin(){
   if(pwd==='0408'){
     document.getElementById('pwd-error').textContent='';
     document.getElementById('pwd-input').value='';
-    // Data migration: clear old fake promo data (v2 — empty input fields)
-    var promoVer = localStorage.getItem('promoDataVer');
-    if(promoVer !== '2'){
-      // Remove all old promoCards_ entries (they contain fake data)
-      var keysToRemove = [];
-      for(var i=0;i<localStorage.length;i++){
-        var k = localStorage.key(i);
-        if(k && k.indexOf('promoCards_') === 0) keysToRemove.push(k);
-      }
-      keysToRemove.forEach(function(k){ localStorage.removeItem(k); });
-      localStorage.setItem('promoDataVer','2');
-      console.log('[Migration] Cleared old promoCards data, '+keysToRemove.length+' keys removed');
-    }
-    showPage('page-plan');
-    syncInit();
+    appInit();
   } else {
     document.getElementById('pwd-error').textContent='密码错误，请重新输入';
   }
+}
+
+// Shared init logic — runs on page load (no login) and on manual login
+function appInit(){
+  // Data migration: clear old fake promo data (v2 — empty input fields)
+  var promoVer = localStorage.getItem('promoDataVer');
+  if(promoVer !== '2'){
+    var keysToRemove = [];
+    for(var i=0;i<localStorage.length;i++){
+      var k = localStorage.key(i);
+      if(k && k.indexOf('promoCards_') === 0) keysToRemove.push(k);
+    }
+    keysToRemove.forEach(function(k){ localStorage.removeItem(k); });
+    localStorage.setItem('promoDataVer','2');
+    console.log('[Migration] Cleared old promoCards data, '+keysToRemove.length+' keys removed');
+  }
+  showPage('page-plan');
+  syncInit();
 }
 
 /* ================================================================
@@ -10729,8 +10732,8 @@ function setupDailyMidnightTimer(){
 dailyContentUpdate();
 setupDailyMidnightTimer();
 
-// Initialize
-document.getElementById('pwd-input').focus();
+// Initialize — skip login, go directly to plan page
+appInit();
 </script>
 
 
