@@ -279,8 +279,16 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 .dual-cards .work-card:last-child{flex:1;}
 
 /* Trivial matters */
-.trivia-item{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.trivia-item{display:flex;align-items:center;gap:8px;margin-bottom:8px;position:relative;}
 .trivia-item:last-child{margin-bottom:0;}
+.trivia-item.dragging{opacity:.4;}
+.trivia-item.drag-over{border-top:2px solid #003451;margin-top:-2px;}
+.trivia-num{
+  flex-shrink:0;width:22px;height:22px;border-radius:50%;background:#003451;color:#fff;
+  font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;
+  cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;
+}
+.trivia-num:active{cursor:grabbing;}
 .trivia-text{
   font-size:13px;flex:1;background:#EBF2F7;border:1px solid transparent;border-radius:8px;
   padding:7px 10px;color:#86868B;outline:none;min-width:0;transition:var(--apple-transition);font-weight:400 !important;
@@ -7845,6 +7853,14 @@ function renderTrivia(trivia){
     var isFilled = (t.text && t.text !== '输入...' && t.text.trim() !== '');
     var div = document.createElement('div');
     div.className = 'trivia-item';
+    div.dataset.idx = i;
+
+    // Number badge — also the drag handle
+    var num = document.createElement('div');
+    num.className = 'trivia-num';
+    num.textContent = (i+1);
+    num.title = '长按拖拽调整顺序';
+
     var input = document.createElement('input');
     input.type = 'text';
     input.className = 'trivia-text' + (isFilled ? ' filled' : '');
@@ -7864,10 +7880,112 @@ function renderTrivia(trivia){
     btn.className = 'trivia-btn-del';
     btn.textContent = '删除';
     btn.setAttribute('onclick', 'delTrivia('+i+')');
+
+    div.appendChild(num);
     div.appendChild(input);
     div.appendChild(btn);
+
+    // Drag events (desktop)
+    div.draggable = false; // only the handle triggers drag
+    num.addEventListener('mousedown', function(e){
+      div.draggable = true;
+    });
+    div.addEventListener('dragstart', function(e){
+      div.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', i);
+    });
+    div.addEventListener('dragend', function(){
+      div.classList.remove('dragging');
+      div.draggable = false;
+      container.querySelectorAll('.trivia-item').forEach(function(el){ el.classList.remove('drag-over'); });
+    });
+    div.addEventListener('dragover', function(e){
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      container.querySelectorAll('.trivia-item').forEach(function(el){ el.classList.remove('drag-over'); });
+      div.classList.add('drag-over');
+    });
+    div.addEventListener('dragleave', function(){
+      div.classList.remove('drag-over');
+    });
+    div.addEventListener('drop', function(e){
+      e.preventDefault();
+      var fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+      var toIdx = i;
+      if(fromIdx !== toIdx){
+        reorderTrivia(fromIdx, toIdx);
+      }
+    });
+
+    // Touch events (mobile — long press to drag)
+    (function(itemEl, fromIdx){
+      var touchTimer = null;
+      var isDragging = false;
+      var cloneEl = null;
+      var startY = 0;
+
+      num.addEventListener('touchstart', function(e){
+        touchTimer = setTimeout(function(){
+          isDragging = true;
+          itemEl.classList.add('dragging');
+          if(navigator.vibrate) navigator.vibrate(30);
+        }, 350);
+      }, {passive:true});
+
+      num.addEventListener('touchmove', function(e){
+        if(touchTimer){ clearTimeout(touchTimer); touchTimer = null; }
+        if(!isDragging) return;
+        e.preventDefault();
+        var touch = e.touches[0];
+        // Find which item we're hovering over
+        var allItems = container.querySelectorAll('.trivia-item');
+        var hoverIdx = -1;
+        allItems.forEach(function(el, idx){
+          var rect = el.getBoundingClientRect();
+          if(touch.clientY >= rect.top && touch.clientY <= rect.bottom){
+            hoverIdx = idx;
+          }
+          el.classList.remove('drag-over');
+        });
+        if(hoverIdx >= 0 && hoverIdx !== fromIdx){
+          allItems[hoverIdx].classList.add('drag-over');
+        }
+      }, {passive:false});
+
+      num.addEventListener('touchend', function(e){
+        if(touchTimer){ clearTimeout(touchTimer); touchTimer = null; }
+        if(!isDragging) return;
+        isDragging = false;
+        itemEl.classList.remove('dragging');
+        var allItems = container.querySelectorAll('.trivia-item');
+        var hoverIdx = -1;
+        var touch = e.changedTouches[0];
+        allItems.forEach(function(el, idx){
+          var rect = el.getBoundingClientRect();
+          if(touch.clientY >= rect.top && touch.clientY <= rect.bottom){
+            hoverIdx = idx;
+          }
+          el.classList.remove('drag-over');
+        });
+        if(hoverIdx >= 0 && hoverIdx !== fromIdx){
+          reorderTrivia(fromIdx, hoverIdx);
+        }
+      });
+    })(div, i);
+
     container.appendChild(div);
   });
+}
+
+function reorderTrivia(fromIdx, toIdx){
+  var trivia = lsGet('trivia_persistent', defaultTrivia);
+  if(!Array.isArray(trivia) || fromIdx < 0 || toIdx < 0 || fromIdx >= trivia.length || toIdx >= trivia.length) return;
+  var moved = trivia.splice(fromIdx, 1)[0];
+  trivia.splice(toIdx, 0, moved);
+  lsSet('trivia_persistent', trivia);
+  renderTrivia(trivia);
+  saveHistory('work', '调整琐事顺序');
 }
 
 function toggleTriviaFilled(el){
