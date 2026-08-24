@@ -10344,7 +10344,7 @@ function syncDownload(){
           }
         });
         
-        // Merge into localStorage (cloud overwrites local for same keys)
+        // Merge into localStorage — cloud wins for same keys, but local-only keys are kept
         var changed = false;
         Object.keys(cloudData).forEach(function(key){
           var localVal = localStorage.getItem(key);
@@ -10370,10 +10370,17 @@ function syncDownload(){
           }
           toast('已从云端同步数据');
         }
+        
+        // After download+merge, upload the merged result so both devices have identical data
+        syncUpload();
       });
     })
     .catch(function(e){
       console.log('[Sync] Download skipped:', e.message);
+      // If no cloud data yet, still upload local data
+      if(e.message === 'No cloud data' || e.message === 'No meta timestamp'){
+        syncUpload();
+      }
     })
     .finally(function(){
       syncIsDownloading = false;
@@ -10443,12 +10450,14 @@ function syncUpdateStatus(){
 
 // Initialize sync on login
 function syncInit(){
-  // Download on login
+  // Download first (merge cloud into local), then upload merged result
   syncDownload();
-  // Periodic download every 30s
+  // Also upload after 2s to push any local-only data (e.g. trivia_persistent)
+  setTimeout(function(){ syncUpload(); }, 2000);
+  // Periodic download every 5s for near-realtime sync
   setInterval(function(){
     syncDownload();
-  }, 30000);
+  }, 5000);
   // Update status
   syncUpdateStatus();
 }
