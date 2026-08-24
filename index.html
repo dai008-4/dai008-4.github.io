@@ -962,6 +962,14 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 .data-modal-btn.import{background:#F5F5F7;color:#1D1D1F;}
 .data-modal-btn.close{background:transparent;color:#86868B;font-weight:400;font-size:14px;}
 .data-modal-btn .svg-icon{width:18px;height:18px;}
+.data-modal-btn.sync{background:#34C759;color:#fff;font-size:13px;padding:12px;}
+.data-modal-btn.sync-download{background:#F5F5F7;color:#1D1D1F;font-size:13px;padding:12px;}
+.sync-section{border-top:1px solid #E5E5EA;padding-top:14px;margin-top:4px;}
+.sync-title{font-size:15px;font-weight:600;color:#1D1D1F;text-align:center;margin-bottom:8px;}
+.sync-status{font-size:12px;color:#86868B;text-align:center;margin-bottom:10px;}
+.sync-btns{display:flex;gap:8px;}
+.sync-btns .data-modal-btn{flex:1;}
+.sync-desc{font-size:11px;color:#86868B;text-align:center;margin-top:8px;}
 .data-import-label{
   width:100%;background:#F5F5F7;color:#1D1D1F;border-radius:12px;padding:14px;
   font-size:15px;font-weight:600;cursor:pointer;transition:var(--apple-transition);
@@ -6083,8 +6091,17 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
         导入数据
         <input type="file" id="data-file-input" accept="application/json,.json" onchange="handleDataImport(this)">
       </label>
-      <button class="data-modal-btn close" onclick="closeDataModal()">关闭</button>
     </div>
+    <div class="sync-section">
+      <div class="sync-title">云端同步</div>
+      <div class="sync-status" id="sync-status">连接中...</div>
+      <div class="sync-btns">
+        <button class="data-modal-btn sync" onclick="syncUploadNow()">立即上传</button>
+        <button class="data-modal-btn sync-download" onclick="syncDownloadNow()">立即下载</button>
+      </div>
+      <div class="sync-desc" id="sync-last">尚未同步</div>
+    </div>
+    <button class="data-modal-btn close" onclick="closeDataModal()">关闭</button>
   </div>
 </div>
 
@@ -7430,6 +7447,7 @@ function doLogin(){
     document.getElementById('pwd-error').textContent='';
     document.getElementById('pwd-input').value='';
     showPage('page-plan');
+    syncInit();
   } else {
     document.getElementById('pwd-error').textContent='密码错误，请重新输入';
   }
@@ -10118,6 +10136,7 @@ function formatSize(bytes){
 function openDataModal(){
   document.getElementById('data-modal').classList.add('show');
   updateDataModalInfo();
+  syncUpdateStatus();
 }
 
 function closeDataModal(){
@@ -10203,6 +10222,236 @@ function handleDataImport(input){
 document.getElementById('data-modal').addEventListener('click', function(e){
   if(e.target === this) closeDataModal();
 });
+
+/* ================================================================
+   CLOUD SYNC (MantleDB — free, no-auth cloud KV store)
+================================================================ */
+var SYNC_BASE = 'https://mantledb.sh/v2';
+var SYNC_NS = 'dai-workbench-0408';
+var syncTimer = null;
+var syncIsUploading = false;
+var syncIsDownloading = false;
+var syncLastUploadTS = parseInt(localStorage.getItem('sync_lastUpload') || '0', 10);
+var syncLastDownloadTS = parseInt(localStorage.getItem('sync_lastDownload') || '0', 10);
+
+function syncCollectData(){
+  var data = {};
+  for(var i=0;i<localStorage.length;i++){
+    var key = localStorage.key(i);
+    if(isAppKey(key)){
+      data[key] = localStorage.getItem(key);
+    }
+  }
+  return data;
+}
+
+function syncSplitChunks(data, maxKB){
+  var maxBytes = maxKB * 1024;
+  var keys = Object.keys(data);
+  var chunks = [];
+  var current = {};
+  var currentSize = 2; // for {}
+  for(var i=0;i<keys.length;i++){
+    var key = keys[i];
+    var val = data[key] || '';
+    var entrySize = key.length + val.length + 10; // approximate JSON overhead
+    if(currentSize + entrySize > maxBytes && Object.keys(current).length > 0){
+      chunks.push(current);
+      current = {};
+      currentSize = 2;
+    }
+    current[key] = val;
+    currentSize += entrySize;
+  }
+  if(Object.keys(current).length > 0) chunks.push(current);
+  return chunks;
+}
+
+function syncUpload(){
+  if(syncIsUploading) return;
+  syncIsUploading = true;
+  var data = syncCollectData();
+  var chunks = syncSplitChunks(data, 50);
+  var meta = {
+    ts: Date.now(),
+    chunks: chunks.length,
+    device: navigator.userAgent.substring(0, 50)
+  };
+  
+  // Upload meta first
+  fetch(SYNC_BASE + '/' + SYNC_NS + '/_meta', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(meta)
+  }).then(function(){
+    // Upload each chunk
+    var promises = chunks.map(function(chunk, idx){
+      return fetch(SYNC_BASE + '/' + SYNC_NS + '/chunk' + idx, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(chunk)
+      });
+    });
+    return Promise.all(promises);
+  }).then(function(){
+    syncLastUploadTS = Date.now();
+    localStorage.setItem('sync_lastUpload', String(syncLastUploadTS));
+    syncUpdateStatus();
+    console.log('[Sync] Upload complete:', chunks.length, 'chunks');
+  }).catch(function(e){
+    console.error('[Sync] Upload error:', e);
+  }).finally(function(){
+    syncIsUploading = false;
+  });
+}
+
+function syncDownload(){
+  if(syncIsDownloading) return false;
+  syncIsDownloading = true;
+  
+  // Get meta first
+  fetch(SYNC_BASE + '/' + SYNC_NS + '/_meta')
+    .then(function(r){
+      if(!r.ok) throw new Error('No cloud data');
+      return r.json();
+    })
+    .then(function(meta){
+      if(!meta || !meta.ts){
+        throw new Error('No meta timestamp');
+      }
+      // If cloud data is older than local, skip
+      if(meta.ts <= syncLastDownloadTS && syncLastDownloadTS > 0){
+        console.log('[Sync] Cloud data is older than last download, skipping');
+        syncIsDownloading = false;
+        return;
+      }
+      // Fetch all chunks
+      var promises = [];
+      for(var i=0;i<meta.chunks;i++){
+        promises.push(
+          fetch(SYNC_BASE + '/' + SYNC_NS + '/chunk' + i)
+            .then(function(r){ return r.json(); })
+        );
+      }
+      return Promise.all(promises).then(function(results){
+        // Merge all chunks
+        var cloudData = {};
+        results.forEach(function(chunk){
+          if(chunk && typeof chunk === 'object'){
+            Object.keys(chunk).forEach(function(key){
+              cloudData[key] = chunk[key];
+            });
+          }
+        });
+        
+        // Merge into localStorage (cloud overwrites local for same keys)
+        var changed = false;
+        Object.keys(cloudData).forEach(function(key){
+          var localVal = localStorage.getItem(key);
+          if(localVal !== cloudData[key]){
+            localStorage.setItem(key, cloudData[key]);
+            changed = true;
+          }
+        });
+        
+        syncLastDownloadTS = Date.now();
+        localStorage.setItem('sync_lastDownload', String(syncLastDownloadTS));
+        syncUpdateStatus();
+        
+        if(changed){
+          console.log('[Sync] Data merged from cloud, refreshing pages');
+          // Re-init current page
+          var active = document.querySelector('.page:not(.hidden)');
+          if(active){
+            if(active.id === 'page-plan') initPlanPage();
+            if(active.id === 'page-work') initWorkPage();
+            if(active.id === 'page-health') initHealthPage();
+            if(active.id === 'page-expense') initExpensePage();
+          }
+          toast('已从云端同步数据');
+        }
+      });
+    })
+    .catch(function(e){
+      console.log('[Sync] Download skipped:', e.message);
+    })
+    .finally(function(){
+      syncIsDownloading = false;
+    });
+  
+  return true;
+}
+
+function syncScheduleUpload(){
+  if(syncTimer) clearTimeout(syncTimer);
+  syncTimer = setTimeout(function(){
+    syncUpload();
+  }, 5000);
+}
+
+// Wrap lsSet to auto-trigger sync
+var _originalLsSet = lsSet;
+lsSet = function(key, val){
+  _originalLsSet(key, val);
+  if(isAppKey(key)){
+    syncScheduleUpload();
+  }
+};
+
+function syncUploadNow(){
+  toast('正在上传...');
+  syncUpload();
+}
+
+function syncDownloadNow(){
+  toast('正在下载...');
+  var wasDownloading = syncIsDownloading;
+  // Force download by resetting the timestamp check
+  syncLastDownloadTS = 0;
+  syncDownload();
+}
+
+function syncUpdateStatus(){
+  var statusEl = document.getElementById('sync-status');
+  var lastEl = document.getElementById('sync-last');
+  if(!statusEl) return;
+  
+  if(syncIsUploading){
+    statusEl.textContent = '正在上传...';
+    statusEl.style.color = '#0071E3';
+  } else if(syncIsDownloading){
+    statusEl.textContent = '正在下载...';
+    statusEl.style.color = '#0071E3';
+  } else {
+    statusEl.textContent = '已连接云端';
+    statusEl.style.color = '#34C759';
+  }
+  
+  if(lastEl){
+    var parts = [];
+    if(syncLastUploadTS > 0){
+      var d = new Date(syncLastUploadTS);
+      parts.push('上次上传: ' + (d.getMonth()+1) + '/' + d.getDate() + ' ' + d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0'));
+    }
+    if(syncLastDownloadTS > 0){
+      var d2 = new Date(syncLastDownloadTS);
+      parts.push('上次下载: ' + (d2.getMonth()+1) + '/' + d2.getDate() + ' ' + d2.getHours() + ':' + String(d2.getMinutes()).padStart(2,'0'));
+    }
+    lastEl.textContent = parts.length > 0 ? parts.join(' · ') : '尚未同步';
+  }
+}
+
+// Initialize sync on login
+function syncInit(){
+  // Download on login
+  syncDownload();
+  // Periodic download every 30s
+  setInterval(function(){
+    syncDownload();
+  }, 30000);
+  // Update status
+  syncUpdateStatus();
+}
 
 /* ================================================================
    DAILY CONTENT POOL & AUTO-UPDATE (每日早上6点自动更新，尽量不重复)
