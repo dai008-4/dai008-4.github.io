@@ -7889,11 +7889,9 @@ function renderTrivia(trivia){
     div.appendChild(input);
     div.appendChild(btn);
 
-    // Drag events (desktop)
-    div.draggable = false; // only the handle triggers drag
-    num.addEventListener('mousedown', function(e){
-      div.draggable = true;
-    });
+    // Drag events (desktop — mousedown on num enables draggable)
+    div.draggable = false;
+    num.addEventListener('mousedown', function(){ div.draggable = true; });
     div.addEventListener('dragstart', function(e){
       div.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
@@ -7910,70 +7908,55 @@ function renderTrivia(trivia){
       container.querySelectorAll('.trivia-item').forEach(function(el){ el.classList.remove('drag-over'); });
       div.classList.add('drag-over');
     });
-    div.addEventListener('dragleave', function(){
-      div.classList.remove('drag-over');
-    });
     div.addEventListener('drop', function(e){
       e.preventDefault();
       var fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
-      var toIdx = i;
-      if(fromIdx !== toIdx){
-        reorderTrivia(fromIdx, toIdx);
-      }
+      if(fromIdx !== i) reorderTrivia(fromIdx, i);
     });
 
-    // Touch events (mobile — long press to drag)
-    (function(itemEl, fromIdx){
-      var touchTimer = null;
-      var isDragging = false;
-      var cloneEl = null;
-      var startY = 0;
+    // Touch events (mobile — long press anywhere on the item to drag)
+    (function(itemEl, myIdx){
+      var timer = null;
+      var dragging = false;
+      var moved = false;
+      var lastHover = -1;
 
-      num.addEventListener('touchstart', function(e){
-        touchTimer = setTimeout(function(){
-          isDragging = true;
+      itemEl.addEventListener('touchstart', function(e){
+        moved = false;
+        timer = setTimeout(function(){
+          dragging = true;
           itemEl.classList.add('dragging');
           if(navigator.vibrate) navigator.vibrate(30);
-        }, 350);
+        }, 300);
       }, {passive:true});
 
-      num.addEventListener('touchmove', function(e){
-        if(touchTimer){ clearTimeout(touchTimer); touchTimer = null; }
-        if(!isDragging) return;
+      itemEl.addEventListener('touchmove', function(e){
+        if(timer){ clearTimeout(timer); timer = null; }
+        moved = true;
+        if(!dragging) return;
         e.preventDefault();
-        var touch = e.touches[0];
-        // Find which item we're hovering over
-        var allItems = container.querySelectorAll('.trivia-item');
-        var hoverIdx = -1;
-        allItems.forEach(function(el, idx){
-          var rect = el.getBoundingClientRect();
-          if(touch.clientY >= rect.top && touch.clientY <= rect.bottom){
-            hoverIdx = idx;
-          }
+        var t = e.touches[0];
+        var items = container.querySelectorAll('.trivia-item');
+        lastHover = -1;
+        items.forEach(function(el, idx){
+          var r = el.getBoundingClientRect();
+          if(t.clientY >= r.top && t.clientY <= r.bottom) lastHover = idx;
           el.classList.remove('drag-over');
         });
-        if(hoverIdx >= 0 && hoverIdx !== fromIdx){
-          allItems[hoverIdx].classList.add('drag-over');
+        if(lastHover >= 0 && lastHover !== myIdx){
+          items[lastHover].classList.add('drag-over');
         }
       }, {passive:false});
 
-      num.addEventListener('touchend', function(e){
-        if(touchTimer){ clearTimeout(touchTimer); touchTimer = null; }
-        if(!isDragging) return;
-        isDragging = false;
+      itemEl.addEventListener('touchend', function(e){
+        if(timer){ clearTimeout(timer); timer = null; }
+        if(!dragging){ return; }
+        dragging = false;
         itemEl.classList.remove('dragging');
-        var allItems = container.querySelectorAll('.trivia-item');
-        var hoverIdx = -1;
-        var touch = e.changedTouches[0];
-        allItems.forEach(function(el, idx){
-          var rect = el.getBoundingClientRect();
-          if(touch.clientY >= rect.top && touch.clientY <= rect.bottom){
-            hoverIdx = idx;
-          }
-          el.classList.remove('drag-over');
-        });
-        if(hoverIdx >= 0 && hoverIdx !== fromIdx){
-          reorderTrivia(fromIdx, hoverIdx);
+        var items = container.querySelectorAll('.trivia-item');
+        items.forEach(function(el){ el.classList.remove('drag-over'); });
+        if(lastHover >= 0 && lastHover !== myIdx){
+          reorderTrivia(myIdx, lastHover);
         }
       });
     })(div, i);
