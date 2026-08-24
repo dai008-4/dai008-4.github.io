@@ -293,7 +293,7 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
   font-size:13px;flex:1;background:#EBF2F7;border:1px solid transparent;border-radius:8px;
   padding:7px 10px;color:#86868B;outline:none;min-width:0;transition:var(--apple-transition);font-weight:400 !important;
 }
-.trivia-text.filled{color:#003451 !important;font-weight:700 !important;background:#fff;}
+.trivia-text.filled{color:#003451 !important;font-weight:700 !important;background:#fff;border-color:#003451 !important;}
 .trivia-text:focus{border-color:#003451;background:#fff;}
 .trivia-btn-del{
   color:#C7C7CC;border:none;border-radius:980px;padding:4px 10px;
@@ -7872,9 +7872,13 @@ function renderTrivia(trivia){
     if(isFilled){
       input.style.color = '#003451';
       input.style.fontWeight = '700';
+      input.style.borderColor = '#003451';
+      input.style.background = '#fff';
     } else {
       input.style.color = '#86868B';
       input.style.fontWeight = '400';
+      input.style.borderColor = 'transparent';
+      input.style.background = '#EBF2F7';
     }
     var btn = document.createElement('button');
     btn.className = 'trivia-btn-del';
@@ -7993,10 +7997,14 @@ function toggleTriviaFilled(el){
     el.classList.add('filled');
     el.style.color = '#003451';
     el.style.fontWeight = '700';
+    el.style.borderColor = '#003451';
+    el.style.background = '#fff';
   } else {
     el.classList.remove('filled');
     el.style.color = '#86868B';
     el.style.fontWeight = '400';
+    el.style.borderColor = 'transparent';
+    el.style.background = '#EBF2F7';
   }
 }
 
