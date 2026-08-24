@@ -10164,7 +10164,7 @@ loadBgSetting();
 // App-specific localStorage key prefixes
 var appKeyPrefixes = [
   'plans_','inspire_','engHistory','trivia_','trivia_persistent','promoCards_','promoMini_',
-  'noteCat_','notes_','health_','health_fridge','health_meals','health_shop','health_mealplan_','health_mealdetail_',
+  'noteCat_','notes_','health_','health_fridge','health_fridge_ver','health_meals','health_shop','health_mealplan_','health_mealdetail_','health_mealcheck_','health_mealreason_',
   'history_','usedNewsIdx','usedAesIdx','usedXhsIdx','usedDyIdx','usedAesKIdx',
   'usedPosterIdx','usedEngIdx','usedTabIdx','usedAesWorkIdx_','currentEngIdx','lastContentUpdate',
   'customAvatar','bgSetting','expense_','expense_v8_','expense_weeknote_v8_','expCat_'
@@ -10459,7 +10459,7 @@ function syncScheduleUpload(){
   if(syncTimer) clearTimeout(syncTimer);
   syncTimer = setTimeout(function(){
     syncUpload();
-  }, 5000);
+  }, 3000);
 }
 
 // Wrap lsSet to auto-trigger sync
@@ -10520,10 +10520,10 @@ function syncInit(){
   syncDownload();
   // Also upload after 2s to push any local-only data (e.g. trivia_persistent)
   setTimeout(function(){ syncUpload(); }, 2000);
-  // Periodic download every 5s for near-realtime sync
+  // Periodic download every 3s for near-realtime sync
   setInterval(function(){
     syncDownload();
-  }, 5000);
+  }, 3000);
   // Update status
   syncUpdateStatus();
 }
