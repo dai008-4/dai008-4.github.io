@@ -360,12 +360,15 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 .promo-card-activity{background:#EBF2F7;border:1px solid transparent;border-radius:8px;padding:4px 10px;outline:none;cursor:text;transition:var(--apple-transition);font-size:14px;font-weight:600;min-width:120px;display:inline-block;}
 .promo-card-activity:focus{border-color:#003451;background:#fff;}
 .promo-card-activity[data-ph]:empty:before{content:attr(data-ph);color:#C7C7CC;font-weight:400;}
-.promo-edit-bottom{text-align:center;font-size:13px;color:#003451;cursor:pointer;margin-top:10px;font-weight:500;padding:6px;border-radius:8px;transition:var(--apple-transition);}
-.promo-edit-bottom:active{background:#EBF2F7;transform:scale(.97);}
-.promo-card-del{width:24px;height:24px;border-radius:6px;background:#FF3B30;color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:14px;line-height:1;transition:var(--apple-transition);}
+.promo-edit-bottom{text-align:center;cursor:pointer;margin-top:10px;transition:var(--apple-transition);}
+.promo-edit-bottom:active{transform:scale(.97);}
+.promo-add-btn{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;background:#003451;color:#fff;border:none;cursor:pointer;flex-shrink:0;transition:var(--apple-transition);}
+.promo-add-btn:active{transform:scale(.88);}
+.promo-add-btn svg{width:14px;height:14px;}
+.promo-card-del{width:24px;height:24px;border-radius:6px;background:#003451;color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:14px;line-height:1;transition:var(--apple-transition);}
 .promo-card-del:active{transform:scale(.88);}
-.promo-row-del{width:20px;height:20px;border-radius:5px;background:#FF3B30;color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:12px;line-height:1;transition:var(--apple-transition);opacity:.6;}
-.promo-row-del:active{transform:scale(.88);opacity:1;}
+.promo-row-del{width:20px;height:20px;border-radius:5px;background:#003451;color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:12px;line-height:1;transition:var(--apple-transition);}
+.promo-row-del:active{transform:scale(.88);}
 
 /* ===== 学习笔记 PAGE ===== */
 #page-notes{background:#f0fff0;}
@@ -7877,20 +7880,20 @@ function renderWorkPromo(cards){
         '<td><div class="promo-editable" contenteditable="true" data-ph="待输入" onblur="savePromoCell('+ci+','+ri+',\'time\',this.textContent)">'+escapeHtml(r.time)+'</div></td>'+
         '<td><div class="promo-editable" contenteditable="true" data-ph="待输入" onblur="savePromoCell('+ci+','+ri+',\'size\',this.textContent)">'+escapeHtml(r.size)+'</div></td>'+
         '<td><div class="promo-editable" contenteditable="true" data-ph="待输入" onblur="savePromoCell('+ci+','+ri+',\'req\',this.textContent)">'+escapeHtml(r.req)+'</div></td>'+
-        '<td style="border:none;"><button class="promo-row-del" onclick="deletePromoRow('+ci+','+ri+')">×</button></td>'+
+        '<td style="border:none;"><button class="promo-row-del" onclick="deletePromoRow('+ci+','+ri+')">−</button></td>'+
       '</tr>';
     }).join('');
     return '<div class="promo-card" style="border-color:var(--red-deep);">'+
       '<div class="promo-card-head">'+
         '<div class="promo-card-title" style="color:var(--red-deep);">'+num+' <span class="promo-card-activity" contenteditable="true" data-ph="待输入活动名称" onblur="savePromoActivity('+ci+',this.textContent)">'+escapeHtml(card.activity)+'</span></div>'+
-        '<button class="promo-card-del" onclick="deletePromoCard('+ci+')">×</button>'+
+        '<button class="promo-card-del" onclick="deletePromoCard('+ci+')">−</button>'+
       '</div>'+
       '<div class="promo-sep" style="border-top-color:var(--red-deep);"></div>'+
       '<table class="promo-table">'+
         '<thead><tr><th>名称</th><th>时间</th><th>尺寸</th><th>要求</th><th style="border:none;"></th></tr></thead>'+
         '<tbody>'+rowsHtml+'</tbody>'+
       '</table>'+
-      '<div class="promo-edit-bottom" onclick="addPromoRow('+ci+')">+ 添加一行</div>'+
+      '<div class="promo-edit-bottom" onclick="addPromoRow('+ci+')"><button class="promo-add-btn"><svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button></div>'+
     '</div>';
   }).join('');
 }
@@ -8204,20 +8207,20 @@ function renderPromoCards(cards){
         '<td><div class="promo-editable" contenteditable="true" data-ph="待输入" onblur="savePromoCell('+ci+','+ri+',\'time\',this.textContent)">'+escapeHtml(r.time)+'</div></td>'+
         '<td><div class="promo-editable" contenteditable="true" data-ph="待输入" onblur="savePromoCell('+ci+','+ri+',\'size\',this.textContent)">'+escapeHtml(r.size)+'</div></td>'+
         '<td><div class="promo-editable" contenteditable="true" data-ph="待输入" onblur="savePromoCell('+ci+','+ri+',\'req\',this.textContent)">'+escapeHtml(r.req)+'</div></td>'+
-        '<td style="border:none;"><button class="promo-row-del" onclick="deletePromoRow('+ci+','+ri+')">×</button></td>'+
+        '<td style="border:none;"><button class="promo-row-del" onclick="deletePromoRow('+ci+','+ri+')">−</button></td>'+
       '</tr>';
     }).join('');
     return '<div class="promo-card">'+
       '<div class="promo-card-head">'+
         '<div class="promo-card-title">'+num+' <span class="promo-card-activity" contenteditable="true" data-ph="待输入活动名称" onblur="savePromoActivity('+ci+',this.textContent)">'+escapeHtml(card.activity)+'</span></div>'+
-        '<button class="promo-card-del" onclick="deletePromoCard('+ci+')">×</button>'+
+        '<button class="promo-card-del" onclick="deletePromoCard('+ci+')">−</button>'+
       '</div>'+
       '<div class="promo-sep"></div>'+
       '<table class="promo-table">'+
         '<thead><tr><th>名称</th><th>时间</th><th>尺寸</th><th>要求</th><th style="border:none;"></th></tr></thead>'+
         '<tbody>'+rowsHtml+'</tbody>'+
       '</table>'+
-      '<div class="promo-edit-bottom" onclick="addPromoRow('+ci+')">+ 添加一行</div>'+
+      '<div class="promo-edit-bottom" onclick="addPromoRow('+ci+')"><button class="promo-add-btn"><svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button></div>'+
     '</div>';
   }).join('');
 }
