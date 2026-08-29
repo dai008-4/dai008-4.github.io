@@ -10442,6 +10442,18 @@ var syncIsUploading = false;
 var syncIsDownloading = false;
 var syncLastUploadTS = parseInt(localStorage.getItem('sync_lastUpload') || '0', 10);
 var syncLastDownloadTS = parseInt(localStorage.getItem('sync_lastDownload') || '0', 10);
+// Track recently modified local keys to prevent cloud overwriting newer local data
+var syncRecentLocalKeys = {};  // key → timestamp
+var syncRenderPending = false;  // re-render deferred because user is typing
+
+// Check if user is actively typing in an input field
+function syncUserIsTyping(){
+  var el = document.activeElement;
+  if(!el) return false;
+  if(el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') return true;
+  if(el.isContentEditable) return true;
+  return false;
+}
 
 function syncCollectData(){
   var data = {};
@@ -10553,9 +10565,16 @@ function syncDownload(){
           }
         });
         
-        // Merge into localStorage — cloud wins for same keys, but local-only keys are kept
+        // Merge into localStorage — cloud wins for same keys, but:
+        // 1. Skip keys that were modified locally within the last 10s (prevent overwriting newer local data)
+        // 2. Don't re-render if user is actively typing
         var changed = false;
+        var now = Date.now();
         Object.keys(cloudData).forEach(function(key){
+          // Skip if this key was modified locally within the last 10 seconds
+          if(syncRecentLocalKeys[key] && (now - syncRecentLocalKeys[key]) < 10000){
+            return;
+          }
           var localVal = localStorage.getItem(key);
           if(localVal !== cloudData[key]){
             localStorage.setItem(key, cloudData[key]);
@@ -10568,16 +10587,14 @@ function syncDownload(){
         syncUpdateStatus();
         
         if(changed){
-          console.log('[Sync] Data merged from cloud, refreshing pages');
-          // Re-init current page
-          var active = document.querySelector('.page:not(.hidden)');
-          if(active){
-            if(active.id === 'page-plan') initPlanPage();
-            if(active.id === 'page-work') initWorkPage();
-            if(active.id === 'page-health') initHealthPage();
-            if(active.id === 'page-expense') initExpensePage();
+          console.log('[Sync] Data merged from cloud');
+          // Don't re-render if user is actively typing — defer it
+          if(syncUserIsTyping()){
+            console.log('[Sync] User is typing, deferring re-render');
+            syncRenderPending = true;
+          } else {
+            syncDoReRender();
           }
-          toast('已从云端同步数据');
         }
         
         // After download+merge, upload the merged result so both devices have identical data
@@ -10602,13 +10619,15 @@ function syncScheduleUpload(){
   if(syncTimer) clearTimeout(syncTimer);
   syncTimer = setTimeout(function(){
     syncUpload();
-  }, 3000);
+  }, 1500);
 }
 
 // Wrap lsSet to auto-trigger sync
 var _originalLsSet = lsSet;
 lsSet = function(key, val){
   _originalLsSet(key, val);
+  // Track recently modified keys (10s window)
+  syncRecentLocalKeys[key] = Date.now();
   if(isAppKey(key)){
     syncScheduleUpload();
   }
@@ -10626,6 +10645,29 @@ function syncDownloadNow(){
   syncLastDownloadTS = 0;
   syncDownload();
 }
+
+// Re-render the current active page after sync
+function syncDoReRender(){
+  syncRenderPending = false;
+  var active = document.querySelector('.page:not(.hidden)');
+  if(active){
+    if(active.id === 'page-plan') initPlanPage();
+    if(active.id === 'page-work') initWorkPage();
+    if(active.id === 'page-health') initHealthPage();
+    if(active.id === 'page-expense') initExpensePage();
+  }
+}
+
+// When user finishes typing (blur), check if there's a pending re-render
+document.addEventListener('blur', function(e){
+  if(syncRenderPending){
+    setTimeout(function(){
+      if(!syncUserIsTyping() && syncRenderPending){
+        syncDoReRender();
+      }
+    }, 200);
+  }
+}, true);
 
 function syncUpdateStatus(){
   var statusEl = document.getElementById('sync-status');
