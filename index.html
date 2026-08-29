@@ -853,6 +853,21 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 .exp-detail-row .dr-amount{font-weight:700;color:#1D1D1F;}
 .exp-detail-empty{text-align:center;color:#D1D1D6;font-size:12px;padding:20px 0;cursor:pointer;transition:color 0.2s;}
 .exp-detail-empty:hover{color:#0071E3;}
+.exp-detail-note{flex:1;min-width:0;border:1px solid #E5E5EA;border-radius:6px;padding:4px 8px;font-size:11px;color:#1D1D1F;background:#fff;outline:none;font-family:inherit;transition:border-color 0.2s;}
+.exp-detail-note:focus{border-color:#0071E3;}
+.exp-detail-note[data-ph]:empty:before{content:attr(data-ph);color:#C7C7CC;}
+.exp-detail-add{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:6px;padding:6px;border-radius:8px;cursor:pointer;font-size:12px;color:#0071E3;transition:var(--apple-transition);}
+.exp-detail-add:active{background:#F5F5F7;transform:scale(.97);}
+.exp-detail-add-btn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:#0071E3;color:#fff;border:none;cursor:pointer;flex-shrink:0;transition:var(--apple-transition);}
+.exp-detail-add-btn:active{transform:scale(.88);}
+.exp-detail-add-btn svg{width:14px;height:14px;}
+.exp-custom-row{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:8px;background:#F5F5F7;font-size:12px;}
+.exp-custom-text{flex:1;min-width:0;border:1px solid #E5E5EA;border-radius:6px;padding:4px 8px;font-size:11px;color:#1D1D1F;background:#fff;outline:none;font-family:inherit;}
+.exp-custom-text:focus{border-color:#0071E3;}
+.exp-custom-amount{width:60px;border:1px solid #E5E5EA;border-radius:6px;padding:4px 8px;font-size:11px;color:#1D1D1F;background:#fff;outline:none;font-family:inherit;text-align:right;}
+.exp-custom-amount:focus{border-color:#0071E3;}
+.exp-custom-del{width:20px;height:20px;border-radius:5px;background:#003451;color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:12px;line-height:1;transition:var(--apple-transition);}
+.exp-custom-del:active{transform:scale(.88);}
 .exp-week-note{margin-bottom:8px;padding:8px 12px;background:#F5F5F7;border-radius:8px;font-size:12px;color:#1D1D1F;line-height:1.5;position:relative;}
 .exp-week-note-label{font-size:10px;color:#86868B;font-weight:600;margin-bottom:2px;}
 .exp-week-note-text{white-space:pre-wrap;word-break:break-word;}
@@ -9454,10 +9469,11 @@ function getExpDataForDate(date){
   var key = getExpStorageKey(dateStr);
   var data = lsGet(key, null);
   if(!data){
-    // Only create in-memory, don't persist empty records to localStorage
     data = {cats:new Array(expCats.length).fill('')};
   }
   if(!data.cats) data.cats = new Array(expCats.length).fill('');
+  if(!data.notes) data.notes = {};
+  if(!data.customItems) data.customItems = [];
   // Build details from cats for day view (computed on-the-fly, not persisted)
   var details = [];
   for(var c=0;c<expCats.length;c++){
@@ -9702,6 +9718,12 @@ function renderExpensePage(){
   var dayData = getExpDataForDate(expCurrentDate);
   var dayTotal = 0;
   for(var i=0;i<expCats.length;i++){ var v = parseFloat(dayData.cats[i]); if(!isNaN(v)) dayTotal += v; }
+  if(dayData.customItems){
+    for(var i=0;i<dayData.customItems.length;i++){
+      var cv = parseFloat(dayData.customItems[i].amount);
+      if(!isNaN(cv)) dayTotal += cv;
+    }
+  }
   var weekData = getExpDataForWeek(expCurrentDate);
   var weekTotal = 0;
   for(var i=0;i<expCats.length;i++){ var v = weekData.cats[i]; if(v) weekTotal += v; }
@@ -9740,17 +9762,60 @@ function renderExpensePage(){
   }
   if(data.details && data.details.length > 0){
     data.details.sort(function(a,b){return b.date - a.date;});
-    detailList.innerHTML = noteHtml + data.details.map(function(det){
-      var mm = det.date.getMonth()+1;
-      var dd = det.date.getDate();
-      return '<div class="exp-detail-row">'+
-        '<span class="dr-date">'+mm+'/'+dd+' '+getWeekdayCN(det.date)+'</span>'+
-        '<span class="dr-cat" style="color:'+expCats[det.cat].color+'">'+expCats[det.cat].name+'</span>'+
-        '<span class="dr-amount">¥'+det.amount+'</span>'+
-      '</div>';
-    }).join('');
+    if(expCurrentView === 'day'){
+      // Day view: editable with note fields
+      var dayNotes = data.notes || {};
+      var noteRowsHtml = data.details.map(function(det){
+        var mm = det.date.getMonth()+1;
+        var dd = det.date.getDate();
+        var noteText = dayNotes[det.cat] || '';
+        return '<div class="exp-detail-row" style="flex-direction:column;align-items:stretch;gap:4px;">'+
+          '<div style="display:flex;align-items:center;justify-content:space-between;">'+
+            '<span class="dr-date">'+mm+'/'+dd+' '+getWeekdayCN(det.date)+'</span>'+
+            '<span class="dr-cat" style="color:'+expCats[det.cat].color+'">'+expCats[det.cat].name+'</span>'+
+            '<span class="dr-amount">¥'+det.amount+'</span>'+
+          '</div>'+
+          '<input type="text" class="exp-detail-note" data-ph="具体买了啥..." value="'+escapeAttr(noteText)+'" onblur="saveExpNote('+det.cat+',this.value)">'+
+        '</div>';
+      }).join('');
+      var customHtml = (data.customItems || []).map(function(item, idx){
+        return '<div class="exp-custom-row">'+
+          '<input type="text" class="exp-custom-text" data-ph="买了啥..." value="'+escapeAttr(item.text||'')+'" onblur="saveExpCustomItem('+idx+',\'text\',this.value)">'+
+          '<input type="text" class="exp-custom-amount" data-ph="¥" value="'+escapeAttr(item.amount?String(item.amount):'')+'" onblur="saveExpCustomItem('+idx+',\'amount\',this.value)">'+
+          '<button class="exp-custom-del" onclick="deleteExpCustomItem('+idx+')">−</button>'+
+        '</div>';
+      }).join('');
+      detailList.innerHTML = noteHtml + noteRowsHtml + customHtml +
+        '<div class="exp-detail-add" onclick="addExpCustomItem()"><button class="exp-detail-add-btn"><svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button></div>';
+    } else {
+      detailList.innerHTML = noteHtml + data.details.map(function(det){
+        var mm = det.date.getMonth()+1;
+        var dd = det.date.getDate();
+        return '<div class="exp-detail-row">'+
+          '<span class="dr-date">'+mm+'/'+dd+' '+getWeekdayCN(det.date)+'</span>'+
+          '<span class="dr-cat" style="color:'+expCats[det.cat].color+'">'+expCats[det.cat].name+'</span>'+
+          '<span class="dr-amount">¥'+det.amount+'</span>'+
+        '</div>';
+      }).join('');
+    }
   } else {
-    if(expCurrentView === 'week'){
+    if(expCurrentView === 'day'){
+      // Day view with no category amounts — still allow custom items
+      var customHtml2 = (data.customItems || []).map(function(item, idx){
+        return '<div class="exp-custom-row">'+
+          '<input type="text" class="exp-custom-text" data-ph="买了啥..." value="'+escapeAttr(item.text||'')+'" onblur="saveExpCustomItem('+idx+',\'text\',this.value)">'+
+          '<input type="text" class="exp-custom-amount" data-ph="¥" value="'+escapeAttr(item.amount?String(item.amount):'')+'" onblur="saveExpCustomItem('+idx+',\'amount\',this.value)">'+
+          '<button class="exp-custom-del" onclick="deleteExpCustomItem('+idx+')">−</button>'+
+        '</div>';
+      }).join('');
+      if(customHtml2){
+        detailList.innerHTML = noteHtml + customHtml2 +
+          '<div class="exp-detail-add" onclick="addExpCustomItem()"><button class="exp-detail-add-btn"><svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button></div>';
+      } else {
+        detailList.innerHTML = noteHtml + '<div class="exp-detail-empty" style="cursor:default;">暂无明细记录</div>'+
+          '<div class="exp-detail-add" onclick="addExpCustomItem()"><button class="exp-detail-add-btn"><svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button></div>';
+      }
+    } else if(expCurrentView === 'week'){
       detailList.innerHTML = noteHtml + '<div class="exp-detail-empty" onclick="editWeekNote()">暂无记录，点击记录本周情况</div>';
     } else {
       detailList.innerHTML = noteHtml + '<div class="exp-detail-empty" style="cursor:default;">暂无明细记录</div>';
@@ -9759,6 +9824,72 @@ function renderExpensePage(){
   
   // Bottom bar total — matches the current view (day/week/halfmonth/month)
   monthTotalEl.textContent = '¥' + totalStr;
+}
+
+// Save note for a category on a specific day
+function saveExpNote(catIdx, text){
+  var y = expCurrentDate.getFullYear();
+  var m = (expCurrentDate.getMonth()+1);
+  var d = expCurrentDate.getDate();
+  var dateStr = y+'-'+m+'-'+d;
+  var key = getExpStorageKey(dateStr);
+  var data = lsGet(key, {cats:new Array(expCats.length).fill('')});
+  if(!data.notes) data.notes = {};
+  data.notes[catIdx] = text.trim();
+  lsSet(key, data);
+}
+
+// Save custom item field (text or amount)
+function saveExpCustomItem(idx, field, val){
+  var y = expCurrentDate.getFullYear();
+  var m = (expCurrentDate.getMonth()+1);
+  var d = expCurrentDate.getDate();
+  var dateStr = y+'-'+m+'-'+d;
+  var key = getExpStorageKey(dateStr);
+  var data = lsGet(key, {cats:new Array(expCats.length).fill('')});
+  if(!data.customItems) data.customItems = [];
+  if(data.customItems[idx]){
+    if(field === 'amount'){
+      var num = parseFloat(val);
+      data.customItems[idx].amount = isNaN(num) ? '' : num;
+    } else {
+      data.customItems[idx].text = val.trim();
+    }
+    lsSet(key, data);
+  }
+}
+
+// Add a new custom item row
+function addExpCustomItem(){
+  var y = expCurrentDate.getFullYear();
+  var m = (expCurrentDate.getMonth()+1);
+  var d = expCurrentDate.getDate();
+  var dateStr = y+'-'+m+'-'+d;
+  var key = getExpStorageKey(dateStr);
+  var data = lsGet(key, {cats:new Array(expCats.length).fill('')});
+  if(!data.customItems) data.customItems = [];
+  data.customItems.push({text:'', amount:''});
+  lsSet(key, data);
+  renderExpensePage();
+  // Focus the newly added text input
+  setTimeout(function(){
+    var inputs = document.querySelectorAll('.exp-custom-text');
+    if(inputs.length > 0) inputs[inputs.length-1].focus();
+  }, 50);
+}
+
+// Delete a custom item
+function deleteExpCustomItem(idx){
+  var y = expCurrentDate.getFullYear();
+  var m = (expCurrentDate.getMonth()+1);
+  var d = expCurrentDate.getDate();
+  var dateStr = y+'-'+m+'-'+d;
+  var key = getExpStorageKey(dateStr);
+  var data = lsGet(key, {cats:new Array(expCats.length).fill('')});
+  if(!data.customItems) return;
+  data.customItems.splice(idx, 1);
+  lsSet(key, data);
+  renderExpensePage();
 }
 
 function editWeekNote(){
@@ -9841,6 +9972,15 @@ function onExpCatInput(el){
     var v = parseFloat(data2.cats[i]);
     if(!isNaN(v)){ total += v; catValues.push({idx:i, val:v}); }
   }
+  // Include custom item amounts in day total
+  var customTotal = 0;
+  if(data2.customItems){
+    for(var i=0;i<data2.customItems.length;i++){
+      var cv = parseFloat(data2.customItems[i].amount);
+      if(!isNaN(cv)) customTotal += cv;
+    }
+  }
+  var dayTotalWithCustom = total + customTotal;
   catValues.sort(function(a,b){return b.val - a.val;});
   drawExpPie(catValues, total);
   var totalStr = total.toFixed(2).replace(/\.00$/,'').replace(/\.0$/,'');
@@ -9854,7 +9994,7 @@ function onExpCatInput(el){
     document.getElementById('exp-pie-legend').textContent = '点击右侧分类输入金额';
   }
   // Update summary
-  var dayTotal = total;
+  var dayTotal = dayTotalWithCustom;
   var dayStr = dayTotal ? '¥'+dayTotal.toFixed(2).replace(/\.00$/,'').replace(/\.0$/,'') : '¥0';
   var dayCard = document.querySelector('.exp-summary-card:nth-child(1) .sum-val');
   if(dayCard){ dayCard.textContent = dayStr; dayCard.className = 'sum-val'+(dayTotal?'':' empty'); }
