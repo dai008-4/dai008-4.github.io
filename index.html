@@ -7734,10 +7734,23 @@ function switchSelTab(tab){
   var gradients = ['linear-gradient(135deg,#667eea 0%,#764ba2 100%)','linear-gradient(135deg,#f093fb 0%,#f5576c 100%)','linear-gradient(135deg,#4facfe 0%,#00f2fe 100%)','linear-gradient(135deg,#43e97b 0%,#38f9d7 100%)','linear-gradient(135deg,#fa709a 0%,#fee140 100%)'];
   var list = document.getElementById('sel-list');
   list.innerHTML = data.map(function(item,idx){
-    var imgStyle = item.img ? 'background-image:url(\''+item.img+'\');background-size:cover;background-position:center' : 'background:'+gradients[idx % gradients.length];
+    var grad = gradients[idx % gradients.length];
+    var imgHtml;
+    if(item.img){
+      // Use provided image
+      imgHtml = '<div class="sel-item-img" style="background:'+grad+';background-image:url(\''+item.img+'\');background-size:cover;background-position:center;position:relative;">'+
+        '<span style="position:absolute;z-index:0;color:rgba(255,255,255,.5);font-size:24px;font-weight:700;">'+(item.icon||'')+'</span></div>';
+    } else {
+      // Generate screenshot from link URL using free screenshot service
+      var shotUrl = 'https://s.wordpress.com/mshots/v1/'+encodeURIComponent(item.link)+'?w=120&h=120';
+      imgHtml = '<div class="sel-item-img" style="background:'+grad+';position:relative;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;font-weight:700;">'+
+        '<span>'+(item.icon||'')+'</span>'+
+        '<img src="'+shotUrl+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:12px;opacity:0;transition:opacity .3s;" onload="this.style.opacity=1" onerror="this.style.display=\'none\'" alt="">'+
+      '</div>';
+    }
     var sourceTag = item.source ? '<div style="font-size:11px;color:#86868B;margin-top:4px;">来源：'+item.source+'</div>' : '';
     return '<div class="sel-item" onclick="window.open(\''+item.link+'\',\'_blank\')">'+
-      '<div class="sel-item-img" style="'+imgStyle+';display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;font-weight:700">'+(item.icon||'')+'</div>'+
+      imgHtml+
       '<div class="sel-item-content">'+
         '<div class="sel-item-title">'+item.title+'</div>'+
         '<div class="sel-item-desc">'+item.desc+'</div>'+
