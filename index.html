@@ -320,6 +320,50 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 .trivia-done-btn.del{background:#86868B;color:#fff;}
 .trivia-done-btn.del:active{transform:scale(.88);}
 
+/* Trivia important star */
+.trivia-star{
+  flex-shrink:0;width:20px;height:20px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;border:none;background:transparent;padding:0;transition:var(--apple-transition);
+}
+.trivia-star svg{width:16px;height:16px;color:#C7C7CC;transition:var(--apple-transition);}
+.trivia-star.active svg{color:#FF9500;fill:#FF9500;}
+.trivia-star:active{transform:scale(.8);}
+.trivia-item.important .trivia-text{border-color:#FF9500 !important;}
+.trivia-item.important .trivia-text.filled{border-color:#FF9500 !important;}
+
+/* Weekly summary */
+.trivia-summary-section{margin-top:14px;padding-top:10px;border-top:1px dashed #E5E5EA;}
+.trivia-summary-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.trivia-summary-title{font-size:12px;color:#003451;font-weight:600;display:flex;align-items:center;gap:4px;}
+.trivia-summary-toggle{font-size:11px;color:#86868B;cursor:pointer;border:none;background:transparent;font-family:inherit;font-weight:500;padding:2px 8px;border-radius:6px;transition:var(--apple-transition);}
+.trivia-summary-toggle:active{transform:scale(.9);}
+.trivia-summary-content{background:#F5F5F7;border-radius:10px;padding:10px 12px;}
+.trivia-summary-block{margin-bottom:10px;}
+.trivia-summary-block:last-child{margin-bottom:0;}
+.trivia-summary-block-title{font-size:11px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:3px;}
+.trivia-summary-block-title .count{font-size:10px;color:#86868B;font-weight:400;margin-left:4px;}
+.trivia-summary-block-list{font-size:12px;color:#3A3A3C;line-height:1.6;}
+.trivia-summary-block-list .item{padding:2px 0;display:flex;align-items:flex-start;gap:4px;}
+.trivia-summary-block-list .item-dot{flex-shrink:0;width:4px;height:4px;border-radius:50%;background:#86868B;margin-top:7px;}
+.trivia-summary-block-list .item-text{flex:1;word-break:break-word;}
+.trivia-summary-empty{font-size:11px;color:#86868B;font-style:italic;padding:4px 0;}
+.trivia-summary-date{font-size:10px;color:#86868B;margin-top:6px;text-align:right;}
+.trivia-summary-modal{
+  position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);
+  z-index:9999;display:flex;align-items:center;justify-content:center;
+}
+.trivia-summary-modal-inner{
+  background:#fff;border-radius:14px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto;
+  padding:16px;
+}
+.trivia-summary-modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.trivia-summary-modal-title{font-size:15px;font-weight:700;color:#003451;}
+.trivia-summary-modal-close{font-size:18px;color:#86868B;cursor:pointer;border:none;background:transparent;padding:0 4px;}
+.trivia-summary-modal-item{background:#F5F5F7;border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:var(--apple-transition);}
+.trivia-summary-modal-item:active{transform:scale(.98);}
+.trivia-summary-modal-item-date{font-size:12px;font-weight:700;color:#003451;margin-bottom:4px;}
+.trivia-summary-modal-item-preview{font-size:11px;color:#86868B;line-height:1.4;}
+
 /* Graphic promo mini */
 .promo-mini-head{position:relative;}
 .promo-mini-item{
@@ -5778,6 +5822,19 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
           <button class="promo-add-btn"><svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
         </div>
       </div>
+      <div id="trivia-summary-section" class="trivia-summary-section" style="display:none;">
+        <div class="trivia-summary-header">
+          <div class="trivia-summary-title">
+            <svg class="svg-icon" viewBox="0 0 24 24" style="width:14px;height:14px;color:#003451;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            每周总结
+          </div>
+          <button class="trivia-summary-toggle" id="summary-toggle-btn" onclick="toggleSummaryView()">展开</button>
+        </div>
+        <div id="trivia-summary-content" class="trivia-summary-content" style="display:none;"></div>
+        <div style="margin-top:6px;text-align:right;">
+          <button class="trivia-summary-toggle" onclick="showAllSummaries()">历史汇报</button>
+        </div>
+      </div>
     </div>
 
     <!-- Workplace Slang -->
@@ -7950,6 +8007,8 @@ function initWorkPage(){
   renderTrivia(trivia);
   // Completed trivia
   renderTriviaCompleted();
+  // Weekly summary
+  renderWeeklySummary();
   
   // Slang
   renderSlang();
@@ -7996,8 +8055,9 @@ function renderTrivia(trivia){
   container.innerHTML = '';
   trivia.forEach(function(t,i){
     var isFilled = (t.text && t.text !== '输入...' && t.text.trim() !== '');
+    var isImportant = !!(t.important);
     var div = document.createElement('div');
-    div.className = 'trivia-item';
+    div.className = 'trivia-item' + (isImportant ? ' important' : '');
     div.dataset.idx = i;
 
     // Number badge — click to complete, long press to drag
@@ -8037,8 +8097,16 @@ function renderTrivia(trivia){
     btn.textContent = '删除';
     btn.setAttribute('onclick', 'delTrivia('+i+')');
 
+    // Important star toggle
+    var star = document.createElement('button');
+    star.className = 'trivia-star' + (isImportant ? ' active' : '');
+    star.title = '标记重要';
+    star.innerHTML = '<svg class="svg-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
+    star.setAttribute('onclick', 'toggleImportant('+i+')');
+
     div.appendChild(num);
     div.appendChild(input);
+    div.appendChild(star);
     div.appendChild(btn);
 
     // Drag events (desktop — mousedown on num enables draggable)
@@ -8195,6 +8263,15 @@ function addTriviaItem(){
   toast('已添加一行');
 }
 
+function toggleImportant(i){
+  var trivia = lsGet('trivia_persistent', defaultTrivia);
+  if(!trivia[i]) return;
+  trivia[i].important = !trivia[i].important;
+  lsSet('trivia_persistent', trivia);
+  renderTrivia(trivia);
+  saveHistory('work', (trivia[i].important?'标记重要: ':'取消重要: ')+trivia[i].text);
+}
+
 // ===== Completed Trivia =====
 function completeTrivia(i){
   var trivia = lsGet('trivia_persistent', defaultTrivia);
@@ -8202,6 +8279,8 @@ function completeTrivia(i){
   var item = trivia.splice(i, 1)[0];
   lsSet('trivia_persistent', trivia);
   var done = lsGet('trivia_completed', []);
+  item.completedAt = new Date().getTime();
+  item.completedDate = todayKey;
   done.push(item);
   lsSet('trivia_completed', done);
   renderTrivia(trivia);
@@ -8278,6 +8357,240 @@ function renderTriviaCompleted(){
       '<button class="trivia-done-btn del" onclick="deleteCompletedTrivia('+i+')">删除</button>'+
     '</div>';
   }).join('');
+}
+
+// ===== Weekly Summary =====
+function getWeekStart(date){
+  var d = new Date(date);
+  var day = d.getDay();
+  var diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday as start
+  d.setDate(diff);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function formatDateKey(d){
+  return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+}
+
+function generateWeeklySummary(){
+  var now = new Date();
+  var thisMonday = getWeekStart(now);
+  var lastMonday = new Date(thisMonday);
+  lastMonday.setDate(lastMonday.getDate() - 7);
+  var lastSunday = new Date(thisMonday);
+  lastSunday.setDate(lastSunday.getDate() - 1);
+  lastSunday.setHours(23,59,59,999);
+
+  var startTs = lastMonday.getTime();
+  var endTs = lastSunday.getTime();
+
+  // Completed items from last week
+  var done = lsGet('trivia_completed', []);
+  var completed = done.filter(function(t){
+    if(!t.completedAt) return false;
+    return t.completedAt >= startTs && t.completedAt <= endTs;
+  }).map(function(t){
+    return {text: t.text, important: !!t.important};
+  });
+
+  // Pending items (current trivia_persistent)
+  var trivia = lsGet('trivia_persistent', defaultTrivia);
+  var pending = trivia.filter(function(t){
+    return t.text && t.text !== '输入...' && t.text.trim() !== '';
+  }).map(function(t){
+    return {text: t.text, important: !!t.important};
+  });
+
+  // Important items (from both completed and pending)
+  var important = [];
+  completed.forEach(function(t){ if(t.important) important.push({text: t.text, status: '已完成'}); });
+  pending.forEach(function(t){ if(t.important) important.push({text: t.text, status: '待完成'}); });
+
+  var summary = {
+    weekStart: formatDateKey(lastMonday),
+    weekEnd: formatDateKey(lastSunday),
+    generatedAt: now.getTime(),
+    completed: completed,
+    pending: pending,
+    important: important
+  };
+
+  var key = 'trivia_summary_' + formatDateKey(lastMonday);
+  lsSet(key, summary);
+  saveHistory('work', '生成周报: '+summary.weekStart+' ~ '+summary.weekEnd);
+  return summary;
+}
+
+function getLatestSummary(){
+  var summaries = [];
+  for(var i = 0; i < localStorage.length; i++){
+    var k = localStorage.key(i);
+    if(k && k.indexOf('trivia_summary_') === 0){
+      try{
+        var s = JSON.parse(localStorage.getItem(k));
+        if(s) summaries.push({key: k, data: s});
+      }catch(e){}
+    }
+  }
+  summaries.sort(function(a,b){
+    return (b.data.generatedAt || 0) - (a.data.generatedAt || 0);
+  });
+  return summaries;
+}
+
+function renderWeeklySummary(){
+  var section = document.getElementById('trivia-summary-section');
+  var content = document.getElementById('trivia-summary-content');
+  if(!section || !content) return;
+
+  // Check if today is Monday and auto-generate if not already done
+  var now = new Date();
+  var isMonday = now.getDay() === 1;
+  if(isMonday){
+    var thisMonday = getWeekStart(now);
+    var lastMonday = new Date(thisMonday);
+    lastMonday.setDate(lastMonday.getDate() - 7);
+    var expectedKey = 'trivia_summary_' + formatDateKey(lastMonday);
+    if(!localStorage.getItem(expectedKey)){
+      generateWeeklySummary();
+    }
+  }
+
+  var summaries = getLatestSummary();
+  if(summaries.length === 0){
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = 'block';
+  var s = summaries[0].data;
+
+  var completedHtml = s.completed.length > 0 ?
+    s.completed.map(function(t){
+      return '<div class="item"><div class="item-dot" style="background:#34C759;"></div><div class="item-text">'+escapeHtml(t.text)+(t.important?' <span style="color:#FF9500;">★</span>':'')+'</div></div>';
+    }).join('') :
+    '<div class="trivia-summary-empty">上周无已完成事项</div>';
+
+  var pendingHtml = s.pending.length > 0 ?
+    s.pending.map(function(t){
+      return '<div class="item"><div class="item-dot" style="background:#FF9500;"></div><div class="item-text">'+escapeHtml(t.text)+(t.important?' <span style="color:#FF9500;">★</span>':'')+'</div></div>';
+    }).join('') :
+    '<div class="trivia-summary-empty">暂无待完成事项</div>';
+
+  var importantHtml = s.important.length > 0 ?
+    s.important.map(function(t){
+      return '<div class="item"><div class="item-dot" style="background:#FF3B30;"></div><div class="item-text">'+escapeHtml(t.text)+' <span style="font-size:10px;color:#86868B;">('+t.status+')</span></div></div>';
+    }).join('') :
+    '<div class="trivia-summary-empty">无重要事项</div>';
+
+  content.innerHTML =
+    '<div class="trivia-summary-block">'+
+      '<div class="trivia-summary-block-title" style="color:#34C759;"><svg class="svg-icon" viewBox="0 0 24 24" style="width:12px;height:12px;"><polyline points="20 6 9 17 4 12"></polyline></svg>已完成 <span class="count">('+s.completed.length+')</span></div>'+
+      '<div class="trivia-summary-block-list">'+completedHtml+'</div>'+
+    '</div>'+
+    '<div class="trivia-summary-block">'+
+      '<div class="trivia-summary-block-title" style="color:#FF9500;"><svg class="svg-icon" viewBox="0 0 24 24" style="width:12px;height:12px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>待完成 <span class="count">('+s.pending.length+')</span></div>'+
+      '<div class="trivia-summary-block-list">'+pendingHtml+'</div>'+
+    '</div>'+
+    '<div class="trivia-summary-block">'+
+      '<div class="trivia-summary-block-title" style="color:#FF3B30;"><svg class="svg-icon" viewBox="0 0 24 24" style="width:12px;height:12px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>重要事项 <span class="count">('+s.important.length+')</span></div>'+
+      '<div class="trivia-summary-block-list">'+importantHtml+'</div>'+
+    '</div>'+
+    '<div class="trivia-summary-date">'+s.weekStart+' ~ '+s.weekEnd+'</div>';
+}
+
+var summaryExpanded = false;
+function toggleSummaryView(){
+  var content = document.getElementById('trivia-summary-content');
+  var btn = document.getElementById('summary-toggle-btn');
+  if(!content || !btn) return;
+  summaryExpanded = !summaryExpanded;
+  content.style.display = summaryExpanded ? 'block' : 'none';
+  btn.textContent = summaryExpanded ? '收起' : '展开';
+}
+
+function showAllSummaries(){
+  var summaries = getLatestSummary();
+  if(summaries.length === 0){
+    toast('暂无历史汇报');
+    return;
+  }
+  var modal = document.createElement('div');
+  modal.className = 'trivia-summary-modal';
+  modal.id = 'summary-modal';
+  modal.innerHTML = '<div class="trivia-summary-modal-inner">'+
+    '<div class="trivia-summary-modal-head">'+
+      '<div class="trivia-summary-modal-title">历史周报</div>'+
+      '<button class="trivia-summary-modal-close" onclick="closeSummaryModal()">×</button>'+
+    '</div>'+
+    summaries.map(function(s){
+      var preview = (s.data.completed.length+'完成 / '+s.data.pending.length+'待完成 / '+s.data.important.length+'重要');
+      return '<div class="trivia-summary-modal-item" onclick="viewSummary(\''+s.key+'\')">'+
+        '<div class="trivia-summary-modal-item-date">'+s.data.weekStart+' ~ '+s.data.weekEnd+'</div>'+
+        '<div class="trivia-summary-modal-item-preview">'+preview+'</div>'+
+      '</div>';
+    }).join('')+
+  '</div>';
+  document.body.appendChild(modal);
+  modal.addEventListener('click', function(e){
+    if(e.target === modal) closeSummaryModal();
+  });
+}
+
+function closeSummaryModal(){
+  var modal = document.getElementById('summary-modal');
+  if(modal) modal.remove();
+}
+
+function viewSummary(key){
+  closeSummaryModal();
+  var raw = localStorage.getItem(key);
+  if(!raw) return;
+  var s = JSON.parse(raw);
+  var section = document.getElementById('trivia-summary-section');
+  var content = document.getElementById('trivia-summary-content');
+  var btn = document.getElementById('summary-toggle-btn');
+  if(!section || !content) return;
+  section.style.display = 'block';
+
+  var completedHtml = s.completed.length > 0 ?
+    s.completed.map(function(t){
+      return '<div class="item"><div class="item-dot" style="background:#34C759;"></div><div class="item-text">'+escapeHtml(t.text)+(t.important?' <span style="color:#FF9500;">★</span>':'')+'</div></div>';
+    }).join('') :
+    '<div class="trivia-summary-empty">无已完成事项</div>';
+
+  var pendingHtml = s.pending.length > 0 ?
+    s.pending.map(function(t){
+      return '<div class="item"><div class="item-dot" style="background:#FF9500;"></div><div class="item-text">'+escapeHtml(t.text)+(t.important?' <span style="color:#FF9500;">★</span>':'')+'</div></div>';
+    }).join('') :
+    '<div class="trivia-summary-empty">无待完成事项</div>';
+
+  var importantHtml = s.important.length > 0 ?
+    s.important.map(function(t){
+      return '<div class="item"><div class="item-dot" style="background:#FF3B30;"></div><div class="item-text">'+escapeHtml(t.text)+' <span style="font-size:10px;color:#86868B;">('+t.status+')</span></div></div>';
+    }).join('') :
+    '<div class="trivia-summary-empty">无重要事项</div>';
+
+  content.innerHTML =
+    '<div class="trivia-summary-block">'+
+      '<div class="trivia-summary-block-title" style="color:#34C759;"><svg class="svg-icon" viewBox="0 0 24 24" style="width:12px;height:12px;"><polyline points="20 6 9 17 4 12"></polyline></svg>已完成 <span class="count">('+s.completed.length+')</span></div>'+
+      '<div class="trivia-summary-block-list">'+completedHtml+'</div>'+
+    '</div>'+
+    '<div class="trivia-summary-block">'+
+      '<div class="trivia-summary-block-title" style="color:#FF9500;"><svg class="svg-icon" viewBox="0 0 24 24" style="width:12px;height:12px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>待完成 <span class="count">('+s.pending.length+')</span></div>'+
+      '<div class="trivia-summary-block-list">'+pendingHtml+'</div>'+
+    '</div>'+
+    '<div class="trivia-summary-block">'+
+      '<div class="trivia-summary-block-title" style="color:#FF3B30;"><svg class="svg-icon" viewBox="0 0 24 24" style="width:12px;height:12px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>重要事项 <span class="count">('+s.important.length+')</span></div>'+
+      '<div class="trivia-summary-block-list">'+importantHtml+'</div>'+
+    '</div>'+
+    '<div class="trivia-summary-date">'+s.weekStart+' ~ '+s.weekEnd+'</div>';
+
+  summaryExpanded = true;
+  content.style.display = 'block';
+  if(btn) btn.textContent = '收起';
+  document.getElementById('trivia-summary-section').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
 function renderPromoMini(promoMini){
@@ -10478,7 +10791,7 @@ loadBgSetting();
 ================================================================ */
 // App-specific localStorage key prefixes
 var appKeyPrefixes = [
-  'plans_','inspire_','engHistory','trivia_','trivia_persistent','trivia_completed','promoCards_','promoMini_',
+  'plans_','inspire_','engHistory','trivia_','trivia_persistent','trivia_completed','trivia_summary_','promoCards_','promoMini_',
   'noteCat_','notes_','health_','health_fridge','health_fridge_ver','health_meals','health_shop','health_mealplan_','health_mealdetail_','health_mealcheck_','health_mealreason_','selViews_',
   'history_','usedNewsIdx','usedAesIdx','usedXhsIdx','usedDyIdx','usedAesKIdx',
   'usedPosterIdx','usedEngIdx','usedTabIdx','usedAesWorkIdx_','currentEngIdx','lastContentUpdate',
