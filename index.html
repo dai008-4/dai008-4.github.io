@@ -305,6 +305,20 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
   color:#C7C7CC;border:none;border-radius:980px;padding:4px 10px;
   font-size:11px;cursor:pointer;white-space:nowrap;flex-shrink:0;background:#4A4A4A;font-weight:500;
 }
+/* Completed trivia */
+.trivia-done-section{margin-top:14px;padding-top:10px;border-top:1px dashed #E5E5EA;}
+.trivia-done-title{font-size:12px;color:#86868B;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:4px;}
+.trivia-done-item{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.trivia-done-item:last-child{margin-bottom:0;}
+.trivia-done-text{flex:1;font-size:13px;color:#C7C7CC;background:#F5F5F7;border-radius:8px;padding:6px 10px;text-decoration:line-through;font-weight:400;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.trivia-done-btn{
+  border:none;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;
+  flex-shrink:0;font-weight:500;transition:var(--apple-transition);font-family:inherit;
+}
+.trivia-done-btn.return{background:#003451;color:#fff;}
+.trivia-done-btn.return:active{transform:scale(.88);}
+.trivia-done-btn.del{background:#86868B;color:#fff;}
+.trivia-done-btn.del:active{transform:scale(.88);}
 
 /* Graphic promo mini */
 .promo-mini-head{position:relative;}
@@ -5753,7 +5767,17 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
         <div class="card-title"><span class="t-icon" style="color:#003451"><svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></span><span class="t-cn">琐事</span><span class="t-en">Today's Plan</span></div>
         <span class="card-all add-row-btn" onclick="addTriviaItem()"><svg class="svg-icon" viewBox="0 0 24 24" style="width:18px;height:18px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></span>
       </div>
-      <div id="trivia-items"><div class="trivia-item"><input type="text" class="trivia-text" value="输入..." data-idx="0" onchange="updateTrivia(0,this.value)" onfocus="if(this.value=='输入...'){this.select();}"><button class="trivia-btn-del" onclick="delTrivia(0)">删除</button></div><div class="trivia-item"><input type="text" class="trivia-text" value="输入..." data-idx="1" onchange="updateTrivia(1,this.value)" onfocus="if(this.value=='输入...'){this.select();}"><button class="trivia-btn-del" onclick="delTrivia(1)">删除</button></div><div class="trivia-item"><input type="text" class="trivia-text" value="输入..." data-idx="2" onchange="updateTrivia(2,this.value)" onfocus="if(this.value=='输入...'){this.select();}"><button class="trivia-btn-del" onclick="delTrivia(2)">删除</button></div><div class="trivia-item"><input type="text" class="trivia-text" value="输入..." data-idx="3" onchange="updateTrivia(3,this.value)" onfocus="if(this.value=='输入...'){this.select();}"><button class="trivia-btn-del" onclick="delTrivia(3)">删除</button></div><div class="trivia-item"><input type="text" class="trivia-text" value="输入..." data-idx="4" onchange="updateTrivia(4,this.value)" onfocus="if(this.value=='输入...'){this.select();}"><button class="trivia-btn-del" onclick="delTrivia(4)">删除</button></div></div>
+      <div id="trivia-items"></div>
+      <div id="trivia-done-section" class="trivia-done-section" style="display:none;">
+        <div class="trivia-done-title">
+          <svg class="svg-icon" viewBox="0 0 24 24" style="width:14px;height:14px;color:#86868B;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          已完成
+        </div>
+        <div id="trivia-done-items"></div>
+        <div class="exp-detail-add" style="margin-top:6px;" onclick="addCompletedItem()">
+          <button class="promo-add-btn"><svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+        </div>
+      </div>
     </div>
 
     <!-- Workplace Slang -->
@@ -7924,6 +7948,8 @@ function initWorkPage(){
   var trivia = lsGet('trivia_persistent', null);
   if(!trivia) trivia = JSON.parse(JSON.stringify(defaultTrivia));
   renderTrivia(trivia);
+  // Completed trivia
+  renderTriviaCompleted();
   
   // Slang
   renderSlang();
@@ -7974,11 +8000,18 @@ function renderTrivia(trivia){
     div.className = 'trivia-item';
     div.dataset.idx = i;
 
-    // Number badge — also the drag handle
+    // Number badge — click to complete, long press to drag
     var num = document.createElement('div');
     num.className = 'trivia-num';
     num.textContent = (i+1);
-    num.title = '长按拖拽调整顺序';
+    num.title = '点击标记完成 · 长按拖拽调整顺序';
+    num.addEventListener('click', function(e){
+      // Only complete if not dragging
+      if(!div._wasDragged && isFilled){
+        completeTrivia(i);
+      }
+      div._wasDragged = false;
+    });
 
     var input = document.createElement('input');
     input.type = 'text';
@@ -8019,6 +8052,7 @@ function renderTrivia(trivia){
     div.addEventListener('dragend', function(){
       div.classList.remove('dragging');
       div.draggable = false;
+      div._wasDragged = true;
       container.querySelectorAll('.trivia-item').forEach(function(el){ el.classList.remove('drag-over'); });
     });
     div.addEventListener('dragover', function(e){
@@ -8071,6 +8105,7 @@ function renderTrivia(trivia){
         if(timer){ clearTimeout(timer); timer = null; }
         if(!dragging){ return; }
         dragging = false;
+        itemEl._wasDragged = true;
         itemEl.classList.remove('dragging');
         var items = container.querySelectorAll('.trivia-item');
         items.forEach(function(el){ el.classList.remove('drag-over'); });
@@ -8158,6 +8193,91 @@ function addTriviaItem(){
   lsSet('trivia_persistent', trivia);
   renderTrivia(trivia);
   toast('已添加一行');
+}
+
+// ===== Completed Trivia =====
+function completeTrivia(i){
+  var trivia = lsGet('trivia_persistent', defaultTrivia);
+  if(!trivia[i] || !trivia[i].text || trivia[i].text === '输入...' || !trivia[i].text.trim()) return;
+  var item = trivia.splice(i, 1)[0];
+  lsSet('trivia_persistent', trivia);
+  var done = lsGet('trivia_completed', []);
+  done.push(item);
+  lsSet('trivia_completed', done);
+  renderTrivia(trivia);
+  renderTriviaCompleted();
+  saveHistory('work', '完成琐事: '+item.text);
+  toast('已标记完成');
+}
+
+function uncompleteTrivia(i){
+  var done = lsGet('trivia_completed', []);
+  if(!done[i]) return;
+  var item = done.splice(i, 1)[0];
+  lsSet('trivia_completed', done);
+  var trivia = lsGet('trivia_persistent', defaultTrivia);
+  trivia.push(item);
+  lsSet('trivia_persistent', trivia);
+  renderTrivia(trivia);
+  renderTriviaCompleted();
+  saveHistory('work', '返回琐事: '+item.text);
+}
+
+function deleteCompletedTrivia(i){
+  var done = lsGet('trivia_completed', []);
+  if(!done[i]) return;
+  var text = done[i].text;
+  done.splice(i, 1);
+  lsSet('trivia_completed', done);
+  renderTriviaCompleted();
+  saveHistory('work', '删除已完成琐事: '+text);
+  toast('已删除');
+}
+
+function addCompletedItem(){
+  var done = lsGet('trivia_completed', []);
+  done.push({text:'输入...',id:Date.now()});
+  lsSet('trivia_completed', done);
+  renderTriviaCompleted();
+  // Focus the new input
+  setTimeout(function(){
+    var inputs = document.querySelectorAll('#trivia-done-items input');
+    if(inputs.length > 0){ inputs[inputs.length-1].focus(); inputs[inputs.length-1].select(); }
+  }, 50);
+}
+
+function updateCompletedItem(i, val){
+  var done = lsGet('trivia_completed', []);
+  if(done[i]) done[i].text = val;
+  lsSet('trivia_completed', done);
+}
+
+function renderTriviaCompleted(){
+  var done = lsGet('trivia_completed', []);
+  var section = document.getElementById('trivia-done-section');
+  var container = document.getElementById('trivia-done-items');
+  if(!section || !container) return;
+  if(done.length === 0){
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+  container.innerHTML = done.map(function(t, i){
+    var text = t.text || '';
+    var isPlaceholder = !text || text === '输入...' || !text.trim();
+    if(isPlaceholder){
+      return '<div class="trivia-done-item">'+
+        '<input type="text" class="trivia-done-text" style="text-decoration:none;color:#86868B;" value="'+escapeAttr(text)+'" data-ph="输入..." onchange="updateCompletedItem('+i+',this.value)" onfocus="if(this.value==\'输入...\'){this.select();}">'+
+        '<button class="trivia-done-btn return" onclick="uncompleteTrivia('+i+')">返回</button>'+
+        '<button class="trivia-done-btn del" onclick="deleteCompletedTrivia('+i+')">删除</button>'+
+      '</div>';
+    }
+    return '<div class="trivia-done-item">'+
+      '<div class="trivia-done-text">'+escapeHtml(text)+'</div>'+
+      '<button class="trivia-done-btn return" onclick="uncompleteTrivia('+i+')">返回</button>'+
+      '<button class="trivia-done-btn del" onclick="deleteCompletedTrivia('+i+')">删除</button>'+
+    '</div>';
+  }).join('');
 }
 
 function renderPromoMini(promoMini){
@@ -10358,7 +10478,7 @@ loadBgSetting();
 ================================================================ */
 // App-specific localStorage key prefixes
 var appKeyPrefixes = [
-  'plans_','inspire_','engHistory','trivia_','trivia_persistent','promoCards_','promoMini_',
+  'plans_','inspire_','engHistory','trivia_','trivia_persistent','trivia_completed','promoCards_','promoMini_',
   'noteCat_','notes_','health_','health_fridge','health_fridge_ver','health_meals','health_shop','health_mealplan_','health_mealdetail_','health_mealcheck_','health_mealreason_','selViews_',
   'history_','usedNewsIdx','usedAesIdx','usedXhsIdx','usedDyIdx','usedAesKIdx',
   'usedPosterIdx','usedEngIdx','usedTabIdx','usedAesWorkIdx_','currentEngIdx','lastContentUpdate',
