@@ -8281,6 +8281,7 @@ function completeTrivia(i){
   var done = lsGet('trivia_completed', []);
   item.completedAt = new Date().getTime();
   item.completedDate = todayKey;
+  item.completedPos = i; // position in list at time of completion (0=top=most important)
   done.push(item);
   lsSet('trivia_completed', done);
   renderTrivia(trivia);
@@ -8385,27 +8386,50 @@ function generateWeeklySummary(){
   var startTs = lastMonday.getTime();
   var endTs = lastSunday.getTime();
 
-  // Completed items from last week
+  // Completed items from last week — sort by original position (靠前=重要)
   var done = lsGet('trivia_completed', []);
-  var completed = done.filter(function(t){
+  var completedRaw = done.filter(function(t){
     if(!t.completedAt) return false;
     return t.completedAt >= startTs && t.completedAt <= endTs;
-  }).map(function(t){
-    return {text: t.text, important: !!t.important};
+  });
+  completedRaw.sort(function(a,b){
+    var pa = (a.completedPos !== undefined ? a.completedPos : 999);
+    var pb = (b.completedPos !== undefined ? b.completedPos : 999);
+    return pa - pb;
+  });
+  var completed = completedRaw.map(function(t){
+    return {text: t.text, important: !!t.important, pos: (t.completedPos !== undefined ? t.completedPos : 999)};
   });
 
-  // Pending items (current trivia_persistent)
+  // Pending items (current trivia_persistent) — position determines importance
   var trivia = lsGet('trivia_persistent', defaultTrivia);
-  var pending = trivia.filter(function(t){
-    return t.text && t.text !== '输入...' && t.text.trim() !== '';
-  }).map(function(t){
-    return {text: t.text, important: !!t.important};
+  var pending = [];
+  trivia.forEach(function(t, idx){
+    if(t.text && t.text !== '输入...' && t.text.trim() !== ''){
+      pending.push({text: t.text, important: !!t.important, pos: idx});
+    }
   });
 
-  // Important items (from both completed and pending)
-  var important = [];
-  completed.forEach(function(t){ if(t.important) important.push({text: t.text, status: '已完成'}); });
-  pending.forEach(function(t){ if(t.important) important.push({text: t.text, status: '待完成'}); });
+  // Determine importance threshold: top half = 重要, bottom half = 次要
+  var allItems = completed.concat(pending);
+  var totalFilled = allItems.length;
+  var threshold = Math.ceil(totalFilled / 2); // items with pos < threshold are "重要"
+
+  // Important items: pos < threshold OR has star flag — sorted by position (靠前 first)
+  var important = allItems.filter(function(t){
+    return t.pos < threshold || t.important;
+  }).sort(function(a,b){ return a.pos - b.pos; }).map(function(t){
+    var status = completed.indexOf(t) >= 0 ? '已完成' : '待完成';
+    return {text: t.text, status: status};
+  });
+
+  // Sort completed and pending by position
+  completed.sort(function(a,b){ return a.pos - b.pos; });
+  pending.sort(function(a,b){ return a.pos - b.pos; });
+
+  // Remove pos from output (not needed for display)
+  completed = completed.map(function(t){ return {text: t.text, important: t.important}; });
+  pending = pending.map(function(t){ return {text: t.text, important: t.important}; });
 
   var summary = {
     weekStart: formatDateKey(lastMonday),
