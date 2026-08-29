@@ -8060,11 +8060,11 @@ function renderTrivia(trivia){
     div.className = 'trivia-item' + (isImportant ? ' important' : '');
     div.dataset.idx = i;
 
-    // Number badge — click to complete, long press to drag
+    // Number badge — click to complete
     var num = document.createElement('div');
     num.className = 'trivia-num';
     num.textContent = (i+1);
-    num.title = '点击标记完成 · 长按拖拽调整顺序';
+    num.title = '点击标记完成';
     num.addEventListener('click', function(e){
       // Only complete if not dragging
       if(!div._wasDragged && isFilled){
@@ -8081,6 +8081,7 @@ function renderTrivia(trivia){
     input.setAttribute('onchange', 'updateTrivia('+i+',this.value)');
     input.setAttribute('onfocus', "if(this.value=='输入...'){this.select();}");
     input.setAttribute('oninput', 'toggleTriviaFilled(this)');
+    input.title = '长按拖拽调整顺序 · 点击编辑';
     if(isFilled){
       input.style.color = '#003451';
       input.style.fontWeight = '700';
@@ -8109,9 +8110,10 @@ function renderTrivia(trivia){
     div.appendChild(star);
     div.appendChild(btn);
 
-    // Drag events (desktop — mousedown on num enables draggable)
+    // Drag events (desktop — mousedown on input enables draggable)
     div.draggable = false;
-    num.addEventListener('mousedown', function(){ div.draggable = true; });
+    input.addEventListener('mousedown', function(){ div.draggable = true; });
+    input.addEventListener('mouseup', function(){ div.draggable = false; });
     div.addEventListener('dragstart', function(e){
       div.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
@@ -8135,14 +8137,16 @@ function renderTrivia(trivia){
       if(fromIdx !== i) reorderTrivia(fromIdx, i);
     });
 
-    // Touch events (mobile — long press anywhere on the item to drag)
-    (function(itemEl, myIdx){
+    // Touch events (mobile — long press on input to drag)
+    (function(itemEl, myIdx, inputEl){
       var timer = null;
       var dragging = false;
       var moved = false;
       var lastHover = -1;
 
       itemEl.addEventListener('touchstart', function(e){
+        // Only trigger drag from the input (dark blue rounded rectangle)
+        if(e.target !== inputEl) return;
         moved = false;
         timer = setTimeout(function(){
           dragging = true;
@@ -8181,7 +8185,7 @@ function renderTrivia(trivia){
           reorderTrivia(myIdx, lastHover);
         }
       });
-    })(div, i);
+    })(div, i, input);
 
     container.appendChild(div);
   });
