@@ -243,9 +243,15 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 .eng-sentence{font-size:14px;line-height:1.8;margin-bottom:6px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;}
 .eng-sentence .en{color:#1D1D1F;font-weight:500;display:inline-flex;align-items:center;gap:4px;}
 .eng-sentence .cn{color:#86868B;font-size:13px;}
-.eng-speak{display:inline-block;width:18px;height:18px;background-color:rgba(255,255,255,.4);cursor:pointer;flex-shrink:0;vertical-align:middle;-webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='3' y='10' width='3' height='4' rx='1' fill='black'/><rect x='8' y='7' width='3' height='10' rx='1' fill='black'/><rect x='13' y='4' width='3' height='16' rx='1' fill='black'/><rect x='18' y='9' width='3' height='6' rx='1' fill='black'/></svg>") no-repeat center / contain;mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='3' y='10' width='3' height='4' rx='1' fill='black'/><rect x='8' y='7' width='3' height='10' rx='1' fill='black'/><rect x='13' y='4' width='3' height='16' rx='1' fill='black'/><rect x='18' y='9' width='3' height='6' rx='1' fill='black'/></svg>") no-repeat center / contain;transition:var(--apple-transition);}
-.eng-speak:active{background-color:#fff;}
-.eng-sentence .en .eng-speak{background-color:#1D1D1F;width:21px;height:21px;}
+.eng-speak{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;cursor:pointer;flex-shrink:0;vertical-align:middle;transition:var(--apple-transition);border-radius:50%;background:transparent;border:none;padding:0;}
+.eng-speak svg{width:16px;height:16px;color:#003451;}
+.eng-speak:active{transform:scale(.85);}
+.eng-speak.playing svg{color:#007AFF;animation:pulse 0.6s ease-in-out infinite;}
+@keyframes pulse{0%{opacity:1;}50%{opacity:.4;}100%{opacity:1;}}
+.eng-phrase .eng-speak{margin-left:2px;}
+.eng-phrase .eng-speak svg{color:#003451;width:15px;height:15px;}
+.eng-sentence .en .eng-speak{width:22px;height:22px;}
+.eng-sentence .en .eng-speak svg{color:#1D1D1F;width:17px;height:17px;}
 
 /* Daily Selection */
 .daily-sel{background:#fff;border-radius:var(--apple-radius);padding:18px;box-shadow:var(--apple-shadow);}
@@ -5762,8 +5768,8 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
         <span class="eng-refresh" onclick="openEngHistory()"><svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>历史记录</span>
       </div>
       <div class="eng-content">
-        <div class="eng-phrase-box" id="eng-right"><div class="eng-phrase">go for a walk <span class="cn">散步</span><span class="eng-speak" onclick="speakText('go for a walk')"></span></div><div class="eng-phrase">get some fresh air <span class="cn">呼吸新鲜空气</span><span class="eng-speak" onclick="speakText('get some fresh air')"></span></div><div class="eng-phrase">take a break <span class="cn">休息一下</span><span class="eng-speak" onclick="speakText('take a break')"></span></div><div class="eng-phrase">clear my mind <span class="cn">清除思绪</span><span class="eng-speak" onclick="speakText('clear my mind')"></span></div><div class="eng-phrase">slow down <span class="cn">慢下来</span><span class="eng-speak" onclick="speakText('slow down')"></span></div></div>
-        <div class="eng-left" id="eng-left"><div class="eng-sentence"><span class="en">Do you enjoy walking?<span class="eng-speak" onclick="speakText('Do you enjoy walking?')"></span></span><span class="cn">你喜欢散步吗？</span></div><div class="eng-sentence"><span class="en">Where's your favorite place to go for a walk?<span class="eng-speak" onclick="speakText('Where's your favorite place to go for a walk?')"></span></span><span class="cn">你最喜欢去哪里散步？</span></div></div>
+        <div class="eng-phrase-box" id="eng-right"><div class="eng-phrase">go for a walk <span class="cn">散步</span><span class="eng-speak" onclick="speakText('go for a walk',this)"><svg class="svg-icon" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg></span></div><div class="eng-phrase">get some fresh air <span class="cn">呼吸新鲜空气</span><span class="eng-speak" onclick="speakText('get some fresh air',this)"><svg class="svg-icon" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg></span></div><div class="eng-phrase">take a break <span class="cn">休息一下</span><span class="eng-speak" onclick="speakText('take a break',this)"><svg class="svg-icon" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg></span></div><div class="eng-phrase">clear my mind <span class="cn">清除思绪</span><span class="eng-speak" onclick="speakText('clear my mind',this)"><svg class="svg-icon" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg></span></div><div class="eng-phrase">slow down <span class="cn">慢下来</span><span class="eng-speak" onclick="speakText('slow down',this)"><svg class="svg-icon" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg></span></div></div>
+        <div class="eng-left" id="eng-left"><div class="eng-sentence"><span class="en">Do you enjoy walking?<span class="eng-speak" onclick="speakText('Do you enjoy walking?',this)"><svg class="svg-icon" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg></span></span><span class="cn">你喜欢散步吗？</span></div><div class="eng-sentence"><span class="en">Where's your favorite place to go for a walk?<span class="eng-speak" onclick="speakText('Where's your favorite place to go for a walk?',this)"><svg class="svg-icon" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg></span></span><span class="cn">你最喜欢去哪里散步？</span></div></div>
       </div>
     </div>
 
@@ -7740,21 +7746,76 @@ var engIdx = parseInt(lsGet('currentEngIdx','0')) || 0;
 
 function renderEnglish(){
   var data = englishData[engIdx % englishData.length];
+  var speakSvg = '<svg class="svg-icon" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>';
   document.getElementById('eng-left').innerHTML = data.sentences.map(function(s){
-    return '<div class="eng-sentence"><span class="en">'+s.en+'<span class="eng-speak" onclick="speakText(\''+escapeAttr(s.en).replace(/'/g,"\\'")+'\')"></span></span><span class="cn">'+s.cn+'</span></div>';
+    return '<div class="eng-sentence"><span class="en">'+s.en+'<span class="eng-speak" onclick="speakText(\''+escapeAttr(s.en).replace(/'/g,"\\'")+'\',this)">'+speakSvg+'</span></span><span class="cn">'+s.cn+'</span></div>';
   }).join('');
   document.getElementById('eng-right').innerHTML = data.phrases.map(function(p){
-    return '<div class="eng-phrase">'+p.en+' <span class="cn">'+p.cn+'</span><span class="eng-speak" onclick="speakText(\''+escapeAttr(p.en).replace(/'/g,"\\'")+'\')"></span></div>';
+    return '<div class="eng-phrase">'+p.en+' <span class="cn">'+p.cn+'</span><span class="eng-speak" onclick="speakText(\''+escapeAttr(p.en).replace(/'/g,"\\'")+'\',this)">'+speakSvg+'</span></div>';
   }).join('');
 }
 
-function speakText(text){
-  if('speechSynthesis' in window){
-    window.speechSynthesis.cancel();
+function speakText(text, btn){
+  if(!('speechSynthesis' in window)){
+    toast('浏览器不支持语音朗读');
+    return;
+  }
+  // Cancel any ongoing speech
+  window.speechSynthesis.cancel();
+  // Remove playing state from all speak buttons
+  document.querySelectorAll('.eng-speak.playing').forEach(function(el){ el.classList.remove('playing'); });
+  
+  // Use the passed button element, or try to find from event
+  var clickedBtn = btn || null;
+  if(!clickedBtn && typeof event !== 'undefined' && event && event.currentTarget){
+    clickedBtn = event.currentTarget;
+  }
+  if(clickedBtn) clickedBtn.classList.add('playing');
+  
+  // Wait for voices to load (mobile browsers need this)
+  var trySpeak = function(){
     var u = new SpeechSynthesisUtterance(text);
     u.lang = 'en-US';
     u.rate = 0.9;
+    u.pitch = 1;
+    u.volume = 1;
+    
+    // Try to find an English voice
+    var voices = window.speechSynthesis.getVoices();
+    var enVoice = null;
+    for(var v = 0; v < voices.length; v++){
+      if(voices[v].lang && voices[v].lang.indexOf('en') === 0){
+        enVoice = voices[v];
+        break;
+      }
+    }
+    if(enVoice) u.voice = enVoice;
+    
+    u.onerror = function(e){
+      console.log('Speech error:', e);
+      if(clickedBtn) clickedBtn.classList.remove('playing');
+    };
+    u.onend = function(){
+      if(clickedBtn) clickedBtn.classList.remove('playing');
+    };
+    u.onstart = function(){
+      if(clickedBtn) clickedBtn.classList.add('playing');
+    };
+    
     window.speechSynthesis.speak(u);
+  };
+  
+  // If voices not yet loaded, wait for them
+  var voices = window.speechSynthesis.getVoices();
+  if(voices.length === 0){
+    window.speechSynthesis.onvoiceschanged = function(){
+      window.speechSynthesis.onvoiceschanged = null;
+      trySpeak();
+    };
+    // Fallback: try after a short delay even if voiceschanged doesn't fire
+    setTimeout(trySpeak, 200);
+  } else {
+    trySpeak();
   }
 }
 
