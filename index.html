@@ -325,6 +325,23 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 .trivia-done-btn.return:active{transform:scale(.88);}
 .trivia-done-btn.del{background:#86868B;color:#fff;}
 .trivia-done-btn.del:active{transform:scale(.88);}
+.trivia-done-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.trivia-done-hist-btn{font-size:11px;color:#003451;cursor:pointer;border:none;background:transparent;font-family:inherit;font-weight:500;padding:2px 8px;border-radius:6px;transition:var(--apple-transition);}
+.trivia-done-hist-btn:active{transform:scale(.9);}
+.trivia-done-week-label{font-size:10px;color:#AEAEB2;margin-top:4px;font-weight:400;}
+.trivia-hist-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:9999;display:flex;align-items:center;justify-content:center;}
+.trivia-hist-modal-inner{background:#fff;border-radius:14px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto;padding:16px;}
+.trivia-hist-modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.trivia-hist-modal-title{font-size:15px;font-weight:700;color:#003451;}
+.trivia-hist-modal-close{font-size:18px;color:#86868B;cursor:pointer;border:none;background:transparent;padding:0 4px;}
+.trivia-hist-week{margin-bottom:14px;}
+.trivia-hist-week:last-child{margin-bottom:0;}
+.trivia-hist-week-header{font-size:12px;font-weight:700;color:#003451;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #E5E5EA;display:flex;align-items:center;gap:4px;}
+.trivia-hist-week-count{font-size:10px;color:#86868B;font-weight:400;margin-left:4px;}
+.trivia-hist-item{font-size:13px;color:#3A3A3C;padding:4px 0;display:flex;align-items:center;gap:6px;}
+.trivia-hist-item-dot{width:4px;height:4px;border-radius:50%;background:#34C759;flex-shrink:0;}
+.trivia-hist-item-text{flex:1;word-break:break-word;}
+.trivia-hist-empty{font-size:13px;color:#86868B;text-align:center;padding:20px 0;font-style:italic;}
 
 /* Trivia important star */
 .trivia-star{
@@ -5819,9 +5836,12 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
       </div>
       <div id="trivia-items"></div>
       <div id="trivia-done-section" class="trivia-done-section" style="display:none;">
-        <div class="trivia-done-title">
-          <svg class="svg-icon" viewBox="0 0 24 24" style="width:14px;height:14px;color:#86868B;"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          已完成
+        <div class="trivia-done-title-row">
+          <div class="trivia-done-title">
+            <svg class="svg-icon" viewBox="0 0 24 24" style="width:14px;height:14px;color:#86868B;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            已完成 <span style="font-size:10px;color:#AEAEB2;font-weight:400;">本周</span>
+          </div>
+          <button class="trivia-done-hist-btn" onclick="showCompletedHistory()">历史记录</button>
         </div>
         <div id="trivia-done-items"></div>
         <div class="exp-detail-add" style="margin-top:6px;" onclick="addCompletedItem()">
@@ -8338,6 +8358,50 @@ function toggleImportant(i){
 }
 
 // ===== Completed Trivia =====
+function getWeekStartTs(date){
+  var d = new Date(date);
+  var day = d.getDay();
+  var diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday as start
+  d.setDate(diff);
+  d.setHours(0,0,0,0);
+  return d.getTime();
+}
+
+function getWeekKey(date){
+  var d = new Date(date);
+  var monday = new Date(getWeekStartTs(d));
+  return monday.getFullYear()+'-'+(monday.getMonth()+1)+'-'+monday.getDate();
+}
+
+function archiveOldCompleted(){
+  var done = lsGet('trivia_completed', []);
+  if(done.length === 0) return;
+  var thisWeekStart = getWeekStartTs(new Date());
+  var currentWeek = [];
+  var toArchive = {};
+  done.forEach(function(item){
+    var ts = item.completedAt || 0;
+    if(ts && ts < thisWeekStart){
+      var wk = getWeekKey(new Date(ts));
+      if(!toArchive[wk]) toArchive[wk] = [];
+      toArchive[wk].push(item);
+    } else {
+      currentWeek.push(item);
+    }
+  });
+  var archived = false;
+  var history = lsGet('trivia_completed_history', {});
+  for(var wk in toArchive){
+    if(!history[wk]) history[wk] = [];
+    history[wk] = history[wk].concat(toArchive[wk]);
+    archived = true;
+  }
+  if(archived){
+    lsSet('trivia_completed', currentWeek);
+    lsSet('trivia_completed_history', history);
+  }
+}
+
 function completeTrivia(i){
   var trivia = lsGet('trivia_persistent', defaultTrivia);
   if(!trivia[i] || !trivia[i].text || trivia[i].text === '输入...' || !trivia[i].text.trim()) return;
@@ -8346,7 +8410,7 @@ function completeTrivia(i){
   var done = lsGet('trivia_completed', []);
   item.completedAt = new Date().getTime();
   item.completedDate = todayKey;
-  item.completedPos = i; // position in list at time of completion (0=top=most important)
+  item.completedPos = i;
   done.push(item);
   lsSet('trivia_completed', done);
   renderTrivia(trivia);
@@ -8384,7 +8448,6 @@ function addCompletedItem(){
   done.push({text:'输入...',id:Date.now()});
   lsSet('trivia_completed', done);
   renderTriviaCompleted();
-  // Focus the new input
   setTimeout(function(){
     var inputs = document.querySelectorAll('#trivia-done-items input');
     if(inputs.length > 0){ inputs[inputs.length-1].focus(); inputs[inputs.length-1].select(); }
@@ -8398,6 +8461,8 @@ function updateCompletedItem(i, val){
 }
 
 function renderTriviaCompleted(){
+  // First, archive old items
+  archiveOldCompleted();
   var done = lsGet('trivia_completed', []);
   var section = document.getElementById('trivia-done-section');
   var container = document.getElementById('trivia-done-items');
@@ -8423,6 +8488,59 @@ function renderTriviaCompleted(){
       '<button class="trivia-done-btn del" onclick="deleteCompletedTrivia('+i+')">删除</button>'+
     '</div>';
   }).join('');
+}
+
+function showCompletedHistory(){
+  var history = lsGet('trivia_completed_history', {});
+  var weeks = Object.keys(history).sort(function(a,b){ return b.localeCompare(a); });
+  
+  var modal = document.createElement('div');
+  modal.className = 'trivia-hist-modal';
+  modal.id = 'trivia-hist-modal';
+  
+  var innerHtml = '';
+  if(weeks.length === 0){
+    innerHtml = '<div class="trivia-hist-empty">暂无历史记录</div>';
+  } else {
+    innerHtml = weeks.map(function(wk){
+      var items = history[wk];
+      var d = new Date(wk);
+      var weekEnd = new Date(d);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+      var dateStr = (d.getMonth()+1)+'月'+d.getDate()+'日'+' ~ '+(weekEnd.getMonth()+1)+'月'+weekEnd.getDate()+'日';
+      var itemsHtml = items.map(function(t){
+        return '<div class="trivia-hist-item">'+
+          '<div class="trivia-hist-item-dot"></div>'+
+          '<div class="trivia-hist-item-text">'+escapeHtml(t.text || '')+'</div>'+
+        '</div>';
+      }).join('');
+      return '<div class="trivia-hist-week">'+
+        '<div class="trivia-hist-week-header">'+
+          '<svg class="svg-icon" viewBox="0 0 24 24" style="width:12px;height:12px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>'+
+          dateStr+
+          '<span class="trivia-hist-week-count">('+items.length+')</span>'+
+        '</div>'+
+        itemsHtml+
+      '</div>';
+    }).join('');
+  }
+  
+  modal.innerHTML = '<div class="trivia-hist-modal-inner">'+
+    '<div class="trivia-hist-modal-head">'+
+      '<div class="trivia-hist-modal-title">已完成 · 历史记录</div>'+
+      '<button class="trivia-hist-modal-close" onclick="closeCompletedHistory()">×</button>'+
+    '</div>'+
+    innerHtml+
+  '</div>';
+  document.body.appendChild(modal);
+  modal.addEventListener('click', function(e){
+    if(e.target === modal) closeCompletedHistory();
+  });
+}
+
+function closeCompletedHistory(){
+  var modal = document.getElementById('trivia-hist-modal');
+  if(modal) modal.remove();
 }
 
 // ===== Weekly Summary =====
@@ -10880,7 +10998,7 @@ loadBgSetting();
 ================================================================ */
 // App-specific localStorage key prefixes
 var appKeyPrefixes = [
-  'plans_','inspire_','engHistory','trivia_','trivia_persistent','trivia_completed','trivia_summary_','promoCards_','promoMini_',
+  'plans_','inspire_','engHistory','trivia_','trivia_persistent','trivia_completed','trivia_completed_history','trivia_summary_','promoCards_','promoMini_',
   'noteCat_','notes_','health_','health_fridge','health_fridge_ver','health_meals','health_shop','health_mealplan_','health_mealdetail_','health_mealcheck_','health_mealreason_','selViews_',
   'history_','usedNewsIdx','usedAesIdx','usedXhsIdx','usedDyIdx','usedAesKIdx',
   'usedPosterIdx','usedEngIdx','usedTabIdx','usedAesWorkIdx_','currentEngIdx','lastContentUpdate',
