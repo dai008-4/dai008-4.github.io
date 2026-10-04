@@ -8384,6 +8384,36 @@ function formatCompletedDate(ts){
 
 // Archive completed items by their completion date. NEVER deletes records.
 function archiveOldCompleted(){
+  // First, fix any invalid timestamps in history
+  var history = lsGet('trivia_completed_history', {});
+  var histChanged = false;
+  for(var hk in history){
+    history[hk].forEach(function(item){
+      if(!item.completedAt || item.completedAt < 946684800000){
+        var idNum = Number(item.id);
+        if(idNum && idNum > 946684800000){
+          item.completedAt = idNum;
+        } else {
+          item.completedAt = Date.now();
+        }
+        histChanged = true;
+      }
+    });
+  }
+  if(histChanged){
+    // Re-group history items by correct week
+    var newHistory = {};
+    for(var hk2 in history){
+      history[hk2].forEach(function(item){
+        var wk = getWeekKey(new Date(item.completedAt));
+        if(!newHistory[wk]) newHistory[wk] = [];
+        newHistory[wk].push(item);
+      });
+    }
+    lsSet('trivia_completed_history', newHistory);
+    history = newHistory;
+  }
+  
   var done = lsGet('trivia_completed', []);
   if(done.length === 0) return;
   
@@ -8394,9 +8424,14 @@ function archiveOldCompleted(){
   done.forEach(function(item){
     // Ensure every item has a completion timestamp
     var ts = item.completedAt;
-    if(!ts){
-      // Fallback: use item.id (which is Date.now()) or current time
-      ts = item.id || Date.now();
+    if(!ts || ts < 946684800000){ // before 2000-01-01 = invalid
+      // Fallback: use item.id only if it looks like a valid timestamp (after year 2000)
+      var idNum = Number(item.id);
+      if(idNum && idNum > 946684800000){
+        ts = idNum;
+      } else {
+        ts = Date.now();
+      }
       item.completedAt = ts;
       if(!item.completedDate){
         var d = new Date(ts);
@@ -8414,7 +8449,6 @@ function archiveOldCompleted(){
   
   if(Object.keys(toArchive).length === 0) return;
   
-  var history = lsGet('trivia_completed_history', {});
   var totalBefore = done.length;
   var archivedCount = 0;
   
