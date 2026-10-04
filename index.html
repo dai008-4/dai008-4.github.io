@@ -341,6 +341,7 @@ html,body{font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"SF Pro Dis
 .trivia-hist-item{font-size:13px;color:#3A3A3C;padding:4px 0;display:flex;align-items:center;gap:6px;}
 .trivia-hist-item-dot{width:4px;height:4px;border-radius:50%;background:#34C759;flex-shrink:0;}
 .trivia-hist-item-text{flex:1;word-break:break-word;}
+.trivia-hist-item-date{font-size:10px;color:#AEAEB2;flex-shrink:0;margin-left:6px;font-weight:400;}
 .trivia-hist-empty{font-size:13px;color:#86868B;text-align:center;padding:20px 0;font-style:italic;}
 
 /* Trivia important star */
@@ -8086,6 +8087,8 @@ function initWorkPage(){
   var trivia = lsGet('trivia_persistent', null);
   if(!trivia) trivia = JSON.parse(JSON.stringify(defaultTrivia));
   renderTrivia(trivia);
+  // Archive old completed items before rendering (data maintenance, not UI)
+  archiveOldCompleted();
   // Completed trivia
   renderTriviaCompleted();
   // Weekly summary
@@ -8373,15 +8376,34 @@ function getWeekKey(date){
   return monday.getFullYear()+'-'+(monday.getMonth()+1)+'-'+monday.getDate();
 }
 
+function formatCompletedDate(ts){
+  if(!ts) return '';
+  var d = new Date(ts);
+  return (d.getMonth()+1)+'/'+d.getDate();
+}
+
+// Archive completed items by their completion date. NEVER deletes records.
 function archiveOldCompleted(){
   var done = lsGet('trivia_completed', []);
   if(done.length === 0) return;
+  
   var thisWeekStart = getWeekStartTs(new Date());
   var currentWeek = [];
   var toArchive = {};
+  
   done.forEach(function(item){
-    var ts = item.completedAt || 0;
-    if(ts && ts < thisWeekStart){
+    // Ensure every item has a completion timestamp
+    var ts = item.completedAt;
+    if(!ts){
+      // Fallback: use item.id (which is Date.now()) or current time
+      ts = item.id || Date.now();
+      item.completedAt = ts;
+      if(!item.completedDate){
+        var d = new Date(ts);
+        item.completedDate = d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+      }
+    }
+    if(ts < thisWeekStart){
       var wk = getWeekKey(new Date(ts));
       if(!toArchive[wk]) toArchive[wk] = [];
       toArchive[wk].push(item);
@@ -8389,14 +8411,33 @@ function archiveOldCompleted(){
       currentWeek.push(item);
     }
   });
-  var archived = false;
+  
+  if(Object.keys(toArchive).length === 0) return;
+  
   var history = lsGet('trivia_completed_history', {});
+  var totalBefore = done.length;
+  var archivedCount = 0;
+  
   for(var wk in toArchive){
     if(!history[wk]) history[wk] = [];
-    history[wk] = history[wk].concat(toArchive[wk]);
-    archived = true;
+    // Avoid duplicates: check by id
+    var existingIds = {};
+    history[wk].forEach(function(h){ if(h.id) existingIds[h.id] = true; });
+    toArchive[wk].forEach(function(item){
+      if(!item.id || !existingIds[item.id]){
+        history[wk].push(item);
+        existingIds[item.id] = true;
+        archivedCount++;
+      }
+    });
   }
-  if(archived){
+  
+  // Safety check: total records must not decrease
+  var historyTotal = 0;
+  for(var k in history) historyTotal += history[k].length;
+  var expectedTotal = historyTotal + currentWeek.length;
+  
+  if(expectedTotal >= totalBefore || archivedCount === 0){
     lsSet('trivia_completed', currentWeek);
     lsSet('trivia_completed_history', history);
   }
@@ -8461,8 +8502,6 @@ function updateCompletedItem(i, val){
 }
 
 function renderTriviaCompleted(){
-  // First, archive old items
-  archiveOldCompleted();
   var done = lsGet('trivia_completed', []);
   var section = document.getElementById('trivia-done-section');
   var container = document.getElementById('trivia-done-items');
@@ -8509,9 +8548,11 @@ function showCompletedHistory(){
       weekEnd.setDate(weekEnd.getDate() + 6);
       var dateStr = (d.getMonth()+1)+'月'+d.getDate()+'日'+' ~ '+(weekEnd.getMonth()+1)+'月'+weekEnd.getDate()+'日';
       var itemsHtml = items.map(function(t){
+        var dateLabel = formatCompletedDate(t.completedAt);
         return '<div class="trivia-hist-item">'+
           '<div class="trivia-hist-item-dot"></div>'+
           '<div class="trivia-hist-item-text">'+escapeHtml(t.text || '')+'</div>'+
+          (dateLabel ? '<span class="trivia-hist-item-date">'+dateLabel+'</span>' : '')+
         '</div>';
       }).join('');
       return '<div class="trivia-hist-week">'+
@@ -11280,6 +11321,8 @@ function syncDownload(){
         
         if(changed){
           console.log('[Sync] Data merged from cloud');
+          // Archive old completed items that came from cloud
+          archiveOldCompleted();
           // Don't re-render if user is actively typing — defer it
           if(syncUserIsTyping()){
             console.log('[Sync] User is typing, deferring re-render');
